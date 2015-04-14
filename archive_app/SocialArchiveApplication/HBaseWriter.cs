@@ -70,6 +70,16 @@ namespace Microsoft.Azure.HDInsight.Sample.SocialArchiveApplication
                 });
                 row.values.Add(new Cell
                 {
+                    column = Encoding.UTF8.GetBytes("d:profile_image_url"),
+                    data = Encoding.UTF8.GetBytes(tweet.Creator.ProfileImageUrl)
+                });
+                row.values.Add(new Cell
+                {
+                    column = Encoding.UTF8.GetBytes("d:name"),
+                    data = Encoding.UTF8.GetBytes(tweet.Creator.Name)
+                });
+                row.values.Add(new Cell
+                {
                     column = Encoding.UTF8.GetBytes("d:text"),
                     data = Encoding.UTF8.GetBytes(tweet.Text)
                 });
@@ -79,10 +89,16 @@ namespace Microsoft.Azure.HDInsight.Sample.SocialArchiveApplication
                     data = Encoding.UTF8.GetBytes(tweet.RetweetCount.ToString())
                 });
                 row.values.Add(new Cell
+                {
+                    column = Encoding.UTF8.GetBytes("d:favourite_count"),
+                    data = Encoding.UTF8.GetBytes(tweet.FavouriteCount.ToString())
+                });
+                row.values.Add(new Cell
                 { 
                     column = Encoding.UTF8.GetBytes("d:hashtags"),
                     data = Encoding.UTF8.GetBytes(string.Join(",",tweet.Hashtags.Select(x=> x.Text).ToArray()))
                 });
+
                 cs.rows.Add(row);           
             }
             client.StoreCells(TABLE_NAME, cs);

@@ -29,32 +29,17 @@ namespace Microsoft.Azure.HDInsight.Sample.SocialArchiveApplication
                 ConfigurationManager.AppSettings["token_ConsumerSecret"]);
 
 
-            var param = Search.CreateTweetSearchParameter("#GOT");
-
-            param.TweetSearchType = TweetSearchType.OriginalTweetsOnly;
-            param.Lang = Language.English;
-            param.MaximumNumberOfResults = 1000;
-            // param.Lang = Language.English;
+            var param = CreateSearchParam("#GOT");
             var search = Search.SearchTweets(param);
 
-            ProcessTweets("GameOfThrowns", search);
+            ProcessTweets("GameOfThrones", search);
 
-            param = Search.CreateTweetSearchParameter("#GameOfThrones");
-
-            param.TweetSearchType = TweetSearchType.OriginalTweetsOnly;
-            param.Lang = Language.English;
-            param.MaximumNumberOfResults = 1000;
-            // param.Lang = Language.English;
+            param = CreateSearchParam("#GameOfThrones");
             search = Search.SearchTweets(param);
 
             ProcessTweets("GameOfThrones", search);
 
-            param = Search.CreateTweetSearchParameter("#msbuild");
-
-            param.TweetSearchType = TweetSearchType.OriginalTweetsOnly;
-            param.Lang = Language.English;
-            param.MaximumNumberOfResults = 1000;
-            // param.Lang = Language.English;
+            param = CreateSearchParam("#MSBuild");
             search = Search.SearchTweets(param);
 
             ProcessTweets("Build", search);
@@ -65,6 +50,16 @@ namespace Microsoft.Azure.HDInsight.Sample.SocialArchiveApplication
 
 
 
+        }
+
+        private static ITweetSearchParameters CreateSearchParam(string topic)
+        {
+            var param = Search.CreateTweetSearchParameter(topic);
+
+            param.TweetSearchType = TweetSearchType.OriginalTweetsOnly;
+            param.Lang = Language.English;
+            param.MaximumNumberOfResults = 1000;
+            return param;
         }
 
         private static void ProcessTweets(string topic, IEnumerable<Tweetinvi.Core.Interfaces.ITweet> search)

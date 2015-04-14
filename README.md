@@ -3,3 +3,6 @@ Using Azure's big data capabilities, we grab a tweet stream for a show and then 
 
 # Set up instructions 
  tbd   
+
+# Social Archive Application
+This is a basic driver to upload and prime HBase with tweet data
