@@ -58,7 +58,7 @@ namespace Microsoft.Azure.HDInsight.Sample.SocialArchiveApplication
 
             param.TweetSearchType = TweetSearchType.OriginalTweetsOnly;
             param.Lang = Language.English;
-            param.MaximumNumberOfResults = 1000;
+            param.MaximumNumberOfResults = 10;
             return param;
         }
 
