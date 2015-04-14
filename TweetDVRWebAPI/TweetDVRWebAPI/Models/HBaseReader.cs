@@ -68,6 +68,46 @@ namespace TweetDVRWebAPI.Models
                         screenName = Convert.ToString(Encoding.UTF8.GetString(screenNameField.data));
                     }
 
+                    var profileImageUrlField =
+                        row.values.Find(c => Encoding.UTF8.GetString(c.column) == "d:profile_image_url");
+                    var profileImageUrl = "";
+                    if (profileImageUrlField != null)
+                    {
+                        profileImageUrl = Convert.ToString(Encoding.UTF8.GetString(profileImageUrlField.data));
+                    }
+
+                    var nameField =
+                        row.values.Find(c => Encoding.UTF8.GetString(c.column) == "d:name");
+                    var name = "";
+                    if (nameField != null)
+                    {
+                        name = Convert.ToString(Encoding.UTF8.GetString(nameField.data));
+                    }
+
+                    var retweetCountField =
+                        row.values.Find(c => Encoding.UTF8.GetString(c.column) == "d:retweet_count");
+                    var retweetCount = "";
+                    if (retweetCountField != null)
+                    {
+                        retweetCount = Convert.ToString(Encoding.UTF8.GetString(retweetCountField.data));
+                    }
+
+                    var hashtagsField =
+                        row.values.Find(c => Encoding.UTF8.GetString(c.column) == "d:hashtags");
+                    var hashtags = "";
+                    if (hashtagsField != null)
+                    {
+                        hashtags = Convert.ToString(Encoding.UTF8.GetString(hashtagsField.data));
+                    }
+
+                    var favouriteCountField =
+                        row.values.Find(c => Encoding.UTF8.GetString(c.column) == "d:favourite_count");
+                    var favouriteCount = "";
+                    if (favouriteCountField != null)
+                    {
+                        favouriteCount = Convert.ToString(Encoding.UTF8.GetString(favouriteCountField.data));
+                    }
+
                     var sentimentField =
                         row.values.Find(c => Encoding.UTF8.GetString(c.column) == "d:sentiment");
                     var sentiment = 0;
@@ -79,7 +119,13 @@ namespace TweetDVRWebAPI.Models
                     list.Add(new Tweet
                     {
                         Text = text,
-                        Sentiment = sentiment
+                        Name = name,
+                        ProfileImageUrl = profileImageUrl,
+                        Sentiment = sentiment,
+                        FavouriteCount = favouriteCount,
+                        Hashtags = hashtags,
+                        RetweetCount = retweetCount,
+                        ScreenName = screenName
                     });
                 }
             }

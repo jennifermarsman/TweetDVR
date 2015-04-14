@@ -11,5 +11,11 @@ namespace TweetDVRWebAPI.Models
         public string Text { get; set; }
         public string Lang { get; set; }
         public int Sentiment { get; set; }
+        public string Name { get; set; }
+        public string ProfileImageUrl { get; set; }
+        public string FavouriteCount { get; set; }
+        public string Hashtags { get; set; }
+        public string RetweetCount { get; set; }
+        public string ScreenName { get; set; }
     }
 }
