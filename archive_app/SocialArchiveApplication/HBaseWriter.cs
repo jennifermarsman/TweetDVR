@@ -23,7 +23,7 @@ namespace Microsoft.Azure.HDInsight.Sample.SocialArchiveApplication
 
 
         long rowCount = 0;
-
+        Dictionary<string, DictionaryItem> dictionary;
 
 
         public HBaseWriter()
@@ -34,6 +34,7 @@ namespace Microsoft.Azure.HDInsight.Sample.SocialArchiveApplication
                     ConfigurationManager.AppSettings["cluster_username"], 
                     ConfigurationManager.AppSettings["cluster_password"]
                 );
+
             
             client = new HBaseClient(credentials);
 
@@ -49,10 +50,16 @@ namespace Microsoft.Azure.HDInsight.Sample.SocialArchiveApplication
         }
 
         public void WriteTweets(string topic, IEnumerable<Tweetinvi.Core.Interfaces.ITweet> tweets)
-        {   
+        {
+            LoadDictionary();
+
             CellSet cs = new CellSet();
             foreach (var tweet in tweets)
             {
+                ++rowCount;
+                var words = tweet.Text.ToLower().Split(_punctuationChars);
+                int sentimentScore = CalcSentimentScore(words);
+                Console.WriteLine("Score: {0}, Tweet: {1}", sentimentScore, tweet.Text);
                 var time_index = ((ulong)tweet.CreatedAt.ToBinary()).ToString().PadLeft(20, '0');
                 var key = topic + "_" + time_index;
                 var row = new CellSet.Row { key = Encoding.UTF8.GetBytes(key) };
@@ -62,6 +69,11 @@ namespace Microsoft.Azure.HDInsight.Sample.SocialArchiveApplication
                 {
                     column = Encoding.UTF8.GetBytes("d:id_str"),
                     data = Encoding.UTF8.GetBytes(tweet.IdStr)
+                });
+                row.values.Add(new Cell
+                {
+                    column = Encoding.UTF8.GetBytes("d:created_at"),
+                    data = Encoding.UTF8.GetBytes(tweet.CreatedAt.ToString())
                 });
                 row.values.Add(new Cell
                 {
@@ -98,13 +110,78 @@ namespace Microsoft.Azure.HDInsight.Sample.SocialArchiveApplication
                     column = Encoding.UTF8.GetBytes("d:hashtags"),
                     data = Encoding.UTF8.GetBytes(string.Join(",",tweet.Hashtags.Select(x=> x.Text).ToArray()))
                 });
+                row.values.Add(new Cell
+                {
+                    column = Encoding.UTF8.GetBytes("d:sentiment_score"),
+                    data = Encoding.UTF8.GetBytes(sentimentScore.ToString())
+                });
+                row.values.Add(new Cell
+                {
+                    column = Encoding.UTF8.GetBytes("d:order_index"),
+                    data = Encoding.UTF8.GetBytes(rowCount.ToString())
+                });
 
                 cs.rows.Add(row);           
             }
-            client.StoreCells(TABLE_NAME, cs);
+            //client.StoreCells(TABLE_NAME, cs);
             Console.WriteLine("You have written {0} rows", cs.rows.Count);
         }
 
+        private int CalcSentimentScore(string[] words)
+        {
+            var total = 0;
+            foreach (var word in words)
+            {
+                if (dictionary.Keys.Contains(word))
+                {
+                    switch (dictionary[word].Polarity)
+                    {
+                        case "negative": total -= 1; break;
+                        case "positive": total += 1; break;
+                    }
+                }
+            }
+            if (total > 0)
+            {
+                return 1;
+            }
+            else if (total < 0)
+            {
+                return -1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        private void LoadDictionary()
+        {
+            List<string> lines = File.ReadAllLines(@"..\..\data\dictionary.tsv").ToList();
+            var items = lines.Select(line =>
+            {
+                var fields = line.Split('\t');
+                var pos = 0;
+                return new DictionaryItem
+                {
+                    Type = fields[pos++],
+                    Length = Convert.ToInt32(fields[pos++]),
+                    Word = fields[pos++],
+                    Pos = fields[pos++],
+                    Stemmed = fields[pos++],
+                    Polarity = fields[pos++]
+                };
+            });
+
+            dictionary = new Dictionary<string, DictionaryItem>();
+            foreach (var item in items)
+            {
+                if (!dictionary.Keys.Contains(item.Word))
+                {
+                    dictionary.Add(item.Word, item);
+                }
+            }
+        }
 
         private static char[] _punctuationChars = new[] { 
             ' ', '!', '\"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/',   //ascii 23--47
@@ -113,6 +190,15 @@ namespace Microsoft.Azure.HDInsight.Sample.SocialArchiveApplication
 
  
 
+    }
+    public class DictionaryItem
+    {
+        public string Type { get; set; }
+        public int Length { get; set; }
+        public string Word { get; set; }
+        public string Pos { get; set; }
+        public string Stemmed { get; set; }
+        public string Polarity { get; set; }
     }
 
 }

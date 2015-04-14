@@ -105,6 +105,7 @@
   <ItemGroup>
     <None Include="app.config.template" />
     <None Include="App.config" />
+    <None Include="data\dictionary.tsv" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
