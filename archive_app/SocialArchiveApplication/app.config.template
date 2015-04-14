@@ -12,9 +12,12 @@
     </assemblyBinding>
   </runtime>
   <appSettings>
-    <add key="token_ConsumerKey" value="TwitterAPIKey" />
-    <add key="token_ConsumerSecret" value="TwitterAPIsecret" />
-    <add key="token_AccessToken" value="TwitterAPIAccessToken" />
-    <add key="token_AccessTokenSecret" value="TwitterAPIAccessSecret" />
+    <add key="token_ConsumerKey" value="###TwitterAPIKey###" />
+    <add key="token_ConsumerSecret" value="###TwitterAPIsecret###" />
+    <add key="token_AccessToken" value="###TwitterAPIAccessToken###" />
+    <add key="token_AccessTokenSecret" value="###TwitterAPIAccessSecret###" />
+    <add key="cluster_uri" value="###ClusterURI###"/>
+    <add key="cluster_username" value="###Cluster UserName###"/>
+    <add key="cluster_password" value="###Cluster Password###"/>
   </appSettings>
 </configuration>
