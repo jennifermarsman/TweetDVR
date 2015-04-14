@@ -35,8 +35,8 @@ namespace TweetDVRWebAPI.Models
 
             var list = new List<Tweet>();
 
-            var time_index = ((ulong)time.ToBinary()).ToString().PadLeft(20, '0');
-            var startRow = topic + "_";// + time_index;
+            var time_index = (time.ToString("yyyyMMddHHmmss-") + time.Millisecond.ToString());
+            var startRow = topic + "_" + time_index;
             var endRow = topic + "|";
             var scanSettings = new Scanner
             {
@@ -127,6 +127,16 @@ namespace TweetDVRWebAPI.Models
                         RetweetCount = retweetCount,
                         ScreenName = screenName
                     });
+
+                    if (list.Count >= maxCount)
+                    {
+                        break;
+                    }
+                }
+
+                if (list.Count >= maxCount)
+                {
+                    break;
                 }
             }
 
