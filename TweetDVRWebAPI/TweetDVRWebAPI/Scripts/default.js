@@ -8,6 +8,8 @@
         return result;
     }
 
+    var initialDate = new Date(Date.UTC(2015, 3, 13, 1));
+
     WinJS.Namespace.define("App", {
         // State
         //
@@ -27,7 +29,7 @@
             { htName: '#GoT', isSelected: true },
             { htName: '#GameOfThrones', isSelected: true }
         ]),
-        maxListTime: new Date(2015, 3, 13, 21, 14, 0, 0),
+        maxListTime: initialDate,
         list: new WinJS.Binding.List(),
         pendingReset: true,
         pendingTweets: [],
@@ -167,7 +169,7 @@
         dateChanged: WinJS.UI.eventHandler(function (evt) {
             context.model.dvrDate = evt.currentTarget.winControl.current;
             App.pendingReset = true;
-        }),
+        }), 
         timeChanged: WinJS.UI.eventHandler(function (evt) {
             context.model.dvrTime = evt.currentTarget.winControl.current;
             App.pendingReset = true;
@@ -180,8 +182,8 @@
             isNeutralSelected: true,
             isNegativeSelected: false,
             currentMode: App.modes.play,
-            dvrDate: new Date(2015, 3, 13, 21, 14, 0, 0),
-            dvrTime: new Date(2015, 3, 13, 21, 14, 0, 0),
+            dvrDate: initialDate,
+            dvrTime: initialDate
         }
     });
 
