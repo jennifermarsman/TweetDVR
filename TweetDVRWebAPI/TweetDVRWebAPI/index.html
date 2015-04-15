@@ -1,0 +1,21 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/winjs/4.0.0-preview/css/ui-dark.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/winjs/4.0.0-preview/js/WinJS.js"></script>
+    <link rel="stylesheet" href="default.css" />
+    <script src="/Scripts/default.js"></script>
+</head>
+<body id="app">
+    <div id="tweetTemplate" data-win-control="WinJS.Binding.Template">
+        <div data-win-bind="textContent: Name"></div>
+        <div data-win-bind="textContent: Text"></div>
+    </div>
+    <div data-win-control="WinJS.UI.ListView" data-win-options="{
+         itemDataSource: App.list.dataSource,
+         itemTemplate: tweetTemplate,
+         layout: { type: WinJS.UI.ListLayout }
+    }"></div>
+</body>
+</html>
