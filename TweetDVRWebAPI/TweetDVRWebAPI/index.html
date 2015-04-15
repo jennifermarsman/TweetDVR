@@ -45,11 +45,12 @@
 
     <div data-win-control="WinJS.UI.ToolBar">
         <div data-win-control="WinJS.UI.Command" data-win-options="{ id: 'date', type: 'content'}">
-            <label>Date and time: </label>
             <div data-win-control="WinJS.UI.DatePicker"
+                 data-win-options="{ onchange: App.dateChanged }"
                  data-win-bind="winControl.current:model.dvrDate">
             </div>
             <div data-win-control="WinJS.UI.TimePicker"
+                 data-win-options="{ onchange: App.timeChanged }"
                  data-win-bind="winControl.current:model.dvrTime">
             </div>
         </div>

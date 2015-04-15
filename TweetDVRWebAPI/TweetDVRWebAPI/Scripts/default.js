@@ -122,7 +122,7 @@
         resetState: function (dvrDateTime) {
             App.list.length = 0;
             App.pendingTweets = [];
-            App.maxLastTime = dvrDateTime;
+            App.maxListTime = dvrDateTime;
         },
         positiveSelected: WinJS.UI.eventHandler(function () {
             context.model.isPositiveSelected = true;
@@ -163,6 +163,14 @@
                 }
             }
 
+        }),
+        dateChanged: WinJS.UI.eventHandler(function (evt) {
+            context.model.dvrDate = evt.currentTarget.winControl.current;
+            App.pendingReset = true;
+        }),
+        timeChanged: WinJS.UI.eventHandler(function (evt) {
+            context.model.dvrTime = evt.currentTarget.winControl.current;
+            App.pendingReset = true;
         }),
     });
 
