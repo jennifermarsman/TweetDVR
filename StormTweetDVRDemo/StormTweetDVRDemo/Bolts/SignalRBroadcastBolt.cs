@@ -72,7 +72,7 @@ namespace StormTweetDVRDemo.Bolts
                 //If you have only aggreagates to send that can be spaced, you don't need this timer
                 if (timer.ElapsedMilliseconds >= 100)
                 {
-                    SendSingnalRUpdate(orderIndex, "Jen! " + text);
+                    SendSignalRUpdate(orderIndex, "Jen! " + text + " " + createdAt.ToString());
                     timer.Restart();
                 }
             }
@@ -92,7 +92,7 @@ namespace StormTweetDVRDemo.Bolts
             hubConnection.Start().Wait();
         }
 
-        private void SendSingnalRUpdate(long rowCount, string tweet)
+        private void SendSignalRUpdate(long rowCount, string tweet)
         {
             if (hubConnection.State != ConnectionState.Connected)
             {
