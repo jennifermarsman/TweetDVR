@@ -13,6 +13,7 @@
     };
 
     WinJS.Namespace.define("App", {
+        currentTime: new Date(),
         list: new WinJS.Binding.List([{
             "IdStr": null,
             "Text": "#GameofThrones lots of each\n https://t.co/q9UPK0nuDj",
@@ -35,8 +36,22 @@
             "Hashtags": "GameofThrones",
             "RetweetCount": "0",
             "ScreenName": "anyelwae"
-        }])
+        }]),
+
+        fetch: function (date) {
+            var url = "http://localhost:5848/api/tweetsapi?topic=GameOfThrones&time=" + date.toISOString() + "&maxCount=100";
+            return WinJS.xhr({
+                url: url,
+                responseType: "json"
+            });
+        }
     });
 
-    WinJS.UI.processAll();
+    WinJS.UI.processAll().then(function () {
+        App.fetch(new Date(2015, 3, 14)).then(function (arg) {
+            arg.response.forEach(function (entry) {
+                App.list.unshift(entry);
+            });
+        });
+    });
 })();
