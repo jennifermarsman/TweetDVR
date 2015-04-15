@@ -27,25 +27,102 @@
             { htName: '#GoT', isSelected: true },
             { htName: '#GameOfThrones', isSelected: true }
         ]),
-        currentTime: new Date(),
-        maxListTime: new Date(),
+        maxListTime: new Date(2015, 3, 13, 21, 14, 0, 0),
         list: new WinJS.Binding.List(),
+        pendingReset: true,
+        pendingTweets: [],
+        tickTimer: 0,
+        updateTweetsPromise: null,
 
         // Functions
         //
+        dvrDateTime: {
+            get: function () {
+                var date = context.model.dvrDate;
+                var time = context.model.dvrTime;
+                return new Date(
+                    date.getFullYear(), date.getMonth(), date.getDate(),
+                    time.getHours(), time.getMinutes(), time.getSeconds(), time.getMilliseconds()
+                );
+            }
+        },
         fetch: function (date) {
-            var url = "/api/tweetsapi?topic=GameOfThrones&time=" + date.toISOString() + "&maxCount=100";
+            var isoDate = date.toISOString();
+            var apiDate = isoDate.substring(0, isoDate.length - 2);
+            var url = "/api/tweetsapi?topic=GameOfThrones&time=" + apiDate + "&maxCount=100";
+            console.log("fetch: " + url);
+            console.log("REQ: " + date.toString());
             return WinJS.xhr({
                 url: url,
                 responseType: "json"
             }).then(function (arg) {
                 return arg.response.map(function (entry) {
+                    console.log("GOT: " + new Date(entry.CreatedAt).toString());
                     return merge(entry, {
                         CreatedAt: new Date(entry.CreatedAt),
                         tweetURL: "https://twitter.com/"+ entry.ScreenName +"/status/"+ entry.IdStr
                     });
                 });
             });
+        },
+        fetchMore: function () {
+            var maxListTime = App.maxListTime;
+            var pendingTweets = App.pendingTweets;
+
+            return App.fetch(maxListTime).then(function (newTweets) {
+                newTweets.forEach(function (tweet) {
+                    pendingTweets.push(tweet);
+                });
+                App.maxListTime = pendingTweets[pendingTweets.length - 1].CreatedAt;
+            });
+        },
+        processPendingTweets: function () {
+            var dvrDateTime = App.dvrDateTime;
+            var uiList = App.list;
+            var pendingTweets = App.pendingTweets;
+            var newPendingTweets = [];
+            for (var i = 0; i < pendingTweets.length && pendingTweets[i].CreatedAt <= dvrDateTime; i++) {
+                console.log("moved tweet: " + pendingTweets[i].CreatedAt);
+                uiList.unshift(pendingTweets[i]);
+            }
+            if (i > 0) {
+                // Only slice if we moved some pendingTweets to the UI
+                App.pendingTweets = pendingTweets.slice(i);
+            }
+        },
+        updateTweets: function () {
+            if (!App.updateTweetsPromise) {
+                App.processPendingTweets();
+                if (App.pendingTweets.length < 20) {
+                    App.updateTweetsPromise = App.fetchMore().then(function () {
+                        App.updateTweetsPromise = null;
+                        App.updateTweets();
+                    }, function () {
+                        App.updateTweetsPromise = null;
+                    });
+                }
+            }
+        },
+        startPlaying: function () {
+            App.tickTimer = setInterval(function () {
+                var dvrDateTime = new Date(App.dvrDateTime.getTime() + 1000);
+                context.model.dvrDate = dvrDateTime;
+                context.model.dvrTime = dvrDateTime;
+                if (App.pendingReset) {
+                    App.pendingReset = false;
+                    App.resetState(dvrDateTime);
+                }
+                console.log("Tick: " + dvrDateTime);
+                App.updateTweets();
+            }, 1000);
+        },
+        stopPlaying: function () {
+            clearInterval(App.tickTimer);
+        },
+        resetState: function (dvrDateTime) {
+            App.list.length = 0;
+            App.pendingTweets = [];
+            App.maxLastTime = dvrDateTime;
         },
         positiveSelected: WinJS.UI.eventHandler(function () {
             context.model.isPositiveSelected = true;
@@ -64,20 +141,15 @@
             context.model.isNeutralSelected = true;
         }),
         togglePlayPause: WinJS.UI.eventHandler(function (evt) {
-            context.modedl.currentMode = (context.model.currentMode.icon === App.modes.play.icon) ? App.modes.pause : App.modes.play;
+            context.model.currentMode = (context.model.currentMode.icon === App.modes.play.icon) ? App.modes.pause : App.modes.play;
 
-            if (context.model.currentMode === App.modes.play) {
-                App.fetch(context.model.tweetDate).then(function (arg) {
-                    arg.forEach(function (entry) {
-                        if (entry.Text) {
-                            App.list.unshift(entry);
-                        }
-                    });
-                    App.maxListTime = arg[arg.length - 1].CreatedAt;
-                });
-
-
-            };
+            if (context.model.currentMode.icon === App.modes.pause.icon) {
+                // Now playing
+                App.startPlaying();
+            } else {
+                // Now paused
+                App.stopPlaying();
+            }
         }),
         toggleHashtag: WinJS.UI.eventHandler(function (evt) {
             var hashtags = App.hashtags;
@@ -100,8 +172,8 @@
             isNeutralSelected: true,
             isNegativeSelected: false,
             currentMode: App.modes.play,
-            dvrDate: new Date(2015, 3, 12, 21, 0, 0, 0),
-            dvrTime: new Date(2015, 3, 12, 21, 0, 0, 0)
+            dvrDate: new Date(2015, 3, 13, 21, 14, 0, 0),
+            dvrTime: new Date(2015, 3, 13, 21, 14, 0, 0),
         }
     });
 
