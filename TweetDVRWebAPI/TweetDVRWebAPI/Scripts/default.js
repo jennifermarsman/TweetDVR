@@ -1,6 +1,13 @@
 ﻿(function () {
     // http://localhost:5848/api/tweetsapi?topic=GameOfThrones&time=2015-04-14&maxCount=100
 
+    function merge(a, b) {
+        var result = {};
+        for (key in a) { result[key] = a[key]; }
+        for (key in b) { result[key] = b[key]; }
+        return result;
+    }
+
     WinJS.Namespace.define("App", {
         // State
         //
@@ -49,10 +56,16 @@
         // Functions
         //
         fetch: function (date) {
-            var url = "http://localhost:5848/api/tweetsapi?topic=GameOfThrones&time=" + date.toISOString() + "&maxCount=100";
+            var url = "/api/tweetsapi?topic=GameOfThrones&time=" + date.toISOString() + "&maxCount=100";
             return WinJS.xhr({
                 url: url,
                 responseType: "json"
+            }).then(function (arg) {
+                return arg.response.map(function (entry) {
+                    return merge(entry, {
+                        CreatedAt: new Date(entry.CreatedAt)
+                    });
+                });
             });
         },
         positiveSelected: WinJS.UI.eventHandler(function () {
@@ -74,7 +87,7 @@
         togglePlayPause: WinJS.UI.eventHandler(function (evt) {
             context.model.currentMode = (context.model.currentMode.icon === App.modes.play.icon) ? App.modes.pause : App.modes.play;
 
-            if (contex.model.currentMode === App.modes.play) {
+            if (context.model.currentMode === App.modes.play) {
                 // Call the Web Service
 
 
@@ -109,7 +122,7 @@
     WinJS.UI.processAll().then(function () {
         WinJS.Binding.processAll(document.body, context);
         App.fetch(new Date(2015, 3, 14)).then(function (arg) {
-            arg.response.forEach(function (entry) {
+            arg.forEach(function (entry) {
                 App.list.unshift(entry);
             });
         });
