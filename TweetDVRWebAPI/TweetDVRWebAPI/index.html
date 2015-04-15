@@ -17,6 +17,8 @@
             <span data-win-bind="textContent: Name"></span><br />@<span data-win-bind="textContent: ScreenName"></span>
         </div>
         <div data-win-bind="textContent: Text"></div>
+        <div data-win-bind="textContent: CreatedAt"></div>
+        <div data-win-bind="textContent: sentimentFace"></div>
         <a data-win-bind="href: tweetURL" target="_blank">View tweet on Twitter</a>
     </div>
     <div id="hashtagFlyout" data-win-control="WinJS.UI.Flyout">
@@ -28,6 +30,10 @@
         </div>
     </div>
     <div id="sentimentFlyout" data-win-control="WinJS.UI.Menu">
+        <button data-win-control="WinJS.UI.MenuCommand"
+                data-win-options="{label:'All', type:'toggle', onclick:App.allSelected}"
+                data-win-bind="winControl.selected:model.isAllSelected"></button>
+
         <button data-win-control="WinJS.UI.MenuCommand"
                 data-win-options="{label:'Positive', type:'toggle', onclick:App.positiveSelected}"
                 data-win-bind="winControl.selected:model.isPositiveSelected"></button>

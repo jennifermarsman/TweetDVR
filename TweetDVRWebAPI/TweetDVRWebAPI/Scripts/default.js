@@ -8,7 +8,7 @@
         return result;
     }
 
-    var initialDate = new Date(Date.UTC(2015, 3, 13, 1));
+    var initialDate = new Date(Date.UTC(2015, 3, 12, 20));
 
     WinJS.Namespace.define("App", {
         // State
@@ -17,18 +17,19 @@
             play: {
                 icon: "play",
                 label: "Play",
-                tooltip: "Play the video"
+                tooltip: "Play"
             },
             pause: {
                 icon: "pause",
                 label: "Pause",
-                tooltip: "Pause the video"
+                tooltip: "Pause"
             }
         },
         hashtags: new WinJS.Binding.List([
             { htName: '#GoT', isSelected: true },
             { htName: '#GameOfThrones', isSelected: true }
         ]),
+
         maxListTime: initialDate,
         list: new WinJS.Binding.List(),
         pendingReset: true,
@@ -48,21 +49,44 @@
                 );
             }
         },
+        sentimentFilter: {
+            get: function () {
+   
+                if (context.model.isPositiveSelected) {
+                    return 1;
+                }
+                if (context.model.isNeutralSelected) {
+                    return 0;
+                }
+                if (context.model.isNegativeSelected) {
+                    return -1;
+                }
+                    return 3;
+
+            }
+        },
         fetch: function (date) {
             var isoDate = date.toISOString();
             var apiDate = isoDate.substring(0, isoDate.length - 2);
-            var url = "/api/tweetsapi?topic=GameOfThrones&time=" + apiDate + "&maxCount=100";
+            var url = "/api/tweetsapi?topic=GameOfThrones&time=" + apiDate + "&maxCount=100&sentimentFilter=" + App.sentimentFilter;
             console.log("fetch: " + url);
             console.log("REQ: " + date.toString());
             return WinJS.xhr({
                 url: url,
                 responseType: "json"
             }).then(function (arg) {
+                var sentimentMapping = {
+                    "-1": ":(",
+                    "0": ":|",
+                    "1": ":)"
+                };
                 return arg.response.map(function (entry) {
                     console.log("GOT: " + new Date(entry.CreatedAt).toString());
+                    var sentimentFace;
                     return merge(entry, {
                         CreatedAt: new Date(entry.CreatedAt),
-                        tweetURL: "https://twitter.com/"+ entry.ScreenName +"/status/"+ entry.IdStr
+                        tweetURL: "https://twitter.com/" + entry.ScreenName + "/status/" + entry.IdStr,
+                        sentimentFace: sentimentMapping[entry.Sentiment]
                     });
                 });
             });
@@ -126,21 +150,33 @@
             App.pendingTweets = [];
             App.maxListTime = dvrDateTime;
         },
+        allSelected: WinJS.UI.eventHandler(function () {
+                context.model.isAllSelected = true;
+                context.model.isPositiveSelected = false;
+                context.model.isNegativeSelected = false;
+                context.model.isNeutralSelected = false;
+                App.pendingReset = true;
+        }),
         positiveSelected: WinJS.UI.eventHandler(function () {
+            context.model.isAllSelected = false;
             context.model.isPositiveSelected = true;
             context.model.isNegativeSelected = false;
             context.model.isNeutralSelected = false;
+            App.pendingReset = true;
         }),
         negativeSelected: WinJS.UI.eventHandler(function () {
+            context.model.isAllSelected = false;
             context.model.isPositiveSelected = false;
             context.model.isNegativeSelected = true;
             context.model.isNeutralSelected = false;
-
+            App.pendingReset = true;
         }),
         neutralSelected: WinJS.UI.eventHandler(function () {
+            context.model.isAllSelected = false;
             context.model.isPositiveSelected = false;
             context.model.isNegativeSelected = false;
             context.model.isNeutralSelected = true;
+            App.pendingReset = true;
         }),
         togglePlayPause: WinJS.UI.eventHandler(function (evt) {
             context.model.currentMode = (context.model.currentMode.icon === App.modes.play.icon) ? App.modes.pause : App.modes.play;
@@ -178,8 +214,9 @@
 
     var context = WinJS.Binding.as({
         model: {
+            isAllSelected: true,
             isPositiveSelected: false,
-            isNeutralSelected: true,
+            isNeutralSelected: false,
             isNegativeSelected: false,
             currentMode: App.modes.play,
             dvrDate: initialDate,
