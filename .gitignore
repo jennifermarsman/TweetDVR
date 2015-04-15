@@ -83,6 +83,7 @@ publish
 
 # Publish Web Output
 *.Publish.xml
+*.PublishSettings
 
 # Others
 [Bb]in
