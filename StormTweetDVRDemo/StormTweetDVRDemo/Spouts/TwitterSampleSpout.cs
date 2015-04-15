@@ -13,7 +13,7 @@ namespace StormTweetDVRDemo.Spouts
     {
         Context context;
         Queue<SerializableTweet> queue = new Queue<SerializableTweet>();
-        string topic = "Game of Thrones";
+        string topic = "GameofThrones";
         List<string> hashtags = new List<string>(); 
 
         //TODO: Use a cache if you want to re-emit tuples on fail
