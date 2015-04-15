@@ -52,6 +52,14 @@ namespace TweetDVRWebAPI.Models
             {
                 foreach (CellSet.Row row in next.rows)
                 {
+                    var idField =
+                        row.values.Find(c => Encoding.UTF8.GetString(c.column) == "d:id_str");
+                    var id = "";
+                    if (idField != null)
+                    {
+                        id = Convert.ToString(Encoding.UTF8.GetString(idField.data));
+                    }
+
                     var textField =
                         row.values.Find(c => Encoding.UTF8.GetString(c.column) == "d:text");
                     var text = "";
@@ -118,6 +126,7 @@ namespace TweetDVRWebAPI.Models
 
                     list.Add(new Tweet
                     {
+                        IdStr = id,
                         Text = text,
                         Name = name,
                         ProfileImageUrl = profileImageUrl,
