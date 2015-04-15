@@ -26,7 +26,7 @@ namespace Microsoft.Azure.HDInsight.Sample.SocialArchiveApplication
         Dictionary<string, DictionaryItem> dictionary;
 
 
-        public HBaseWriter()
+        public HBaseWriter(int startCount)
         {
           
             var credentials = new HBase.Client.ClusterCredentials(
@@ -34,6 +34,8 @@ namespace Microsoft.Azure.HDInsight.Sample.SocialArchiveApplication
                     ConfigurationManager.AppSettings["cluster_username"], 
                     ConfigurationManager.AppSettings["cluster_password"]
                 );
+
+            this.rowCount = startCount;
 
             
             client = new HBaseClient(credentials);
@@ -59,8 +61,7 @@ namespace Microsoft.Azure.HDInsight.Sample.SocialArchiveApplication
                 ++rowCount;
                 var words = tweet.Text.ToLower().Split(_punctuationChars);
                 int sentimentScore = CalcSentimentScore(words);
-                Console.WriteLine("Score: {0}, Tweet: {1}", sentimentScore, tweet.Text);
-                var time_index = ((ulong)tweet.CreatedAt.ToBinary()).ToString().PadLeft(20, '0');
+                var time_index = (tweet.CreatedAt.ToString("yyyyMMddHHmmss-") + tweet.CreatedAt.Millisecond.ToString());
                 var key = topic + "_" + time_index;
                 var row = new CellSet.Row { key = Encoding.UTF8.GetBytes(key) };
 
@@ -123,7 +124,7 @@ namespace Microsoft.Azure.HDInsight.Sample.SocialArchiveApplication
 
                 cs.rows.Add(row);           
             }
-            //client.StoreCells(TABLE_NAME, cs);
+            client.StoreCells(TABLE_NAME, cs);
             Console.WriteLine("You have written {0} rows", cs.rows.Count);
         }
 

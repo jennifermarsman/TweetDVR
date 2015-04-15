@@ -27,24 +27,43 @@ namespace Microsoft.Azure.HDInsight.Sample.SocialArchiveApplication
                 ConfigurationManager.AppSettings["token_AccessTokenSecret"],
                 ConfigurationManager.AppSettings["token_ConsumerKey"],
                 ConfigurationManager.AppSettings["token_ConsumerSecret"]);
+            
+            int rateLimit = 180;
+            int counter = 101344; //TODO set me
+            long max_id = 587397633007837184; //TODO set me
+            while (rateLimit > 10 )
+            {
+                var rateLimits = RateLimit.GetCurrentCredentialsRateLimits();
+                rateLimit = rateLimits.SearchTweetsLimit.Remaining;
+                Console.WriteLine("You can access your timeline {0} times.", rateLimit);
+                var param = CreateSearchParam("#got OR #gameofthrones", max_id);
+                Console.WriteLine("Searching ...");
+                var search = Search.SearchTweets(param);
+                max_id = search.Last().Id;
+                Console.WriteLine("Count: {0} First Time: {1} Last Time: {2} Min ID {3}", search.Count().ToString(), search.First().CreatedAt.ToString(), search.Last().CreatedAt.ToString(), max_id);
+                Console.WriteLine("Adding to HBase ...");
+                counter+= search.Count();
+                ProcessTweets("GameOfThrones", search, counter);
+                Console.WriteLine("Current Counter: {0}", counter);
+            }
 
+                /*
+                var rateLimits = RateLimit.GetCurrentCredentialsRateLimits();
+                Console.WriteLine("You can access your timeline {0} times.", rateLimits.SearchTweetsLimit.Remaining);
 
-            var param = CreateSearchParam("#GOT");
-            var search = Search.SearchTweets(param);
+                var param = CreateSearchParam("#got OR #gameofthrones", 588126231171858433);
+                var search = Search.SearchTweets(param);
 
-            ProcessTweets("GameOfThrones", search);
+                param = CreateSearchParam("#got OR #gameofthrones", search.Last().Id);
+                var search2 = Search.SearchTweets(param);
 
-            param = CreateSearchParam("#GameOfThrones");
-            search = Search.SearchTweets(param);
+                ProcessTweets("GameOfThrones", search);
+                */
+                //param = CreateSearchParam("#GameOfThrones");
+                //search = Search.SearchTweets(param);
 
-            ProcessTweets("GameOfThrones", search);
-
-            param = CreateSearchParam("#MSBuild");
-            search = Search.SearchTweets(param);
-
-            ProcessTweets("Build", search);
-
-
+                //ProcessTweets("GameOfThrones", search);
+            
             Console.WriteLine("Success");
             Console.ReadLine();
 
@@ -52,19 +71,22 @@ namespace Microsoft.Azure.HDInsight.Sample.SocialArchiveApplication
 
         }
 
-        private static ITweetSearchParameters CreateSearchParam(string topic)
+        private static ITweetSearchParameters CreateSearchParam(string topic, long max_id)
         {
             var param = Search.CreateTweetSearchParameter(topic);
 
             param.TweetSearchType = TweetSearchType.OriginalTweetsOnly;
             param.Lang = Language.English;
-            param.MaximumNumberOfResults = 10;
+            param.MaxId = max_id;
+            param.SearchType = SearchResultType.Mixed;
+            param.TweetSearchType = TweetSearchType.OriginalTweetsOnly;
+            param.MaximumNumberOfResults = 1000;
             return param;
         }
 
-        private static void ProcessTweets(string topic, IEnumerable<Tweetinvi.Core.Interfaces.ITweet> search)
+        private static void ProcessTweets(string topic, IEnumerable<Tweetinvi.Core.Interfaces.ITweet> search, int counter)
         {
-            var hbw = new HBaseWriter();
+            var hbw = new HBaseWriter(counter);
             hbw.WriteTweets(topic, search);
         }
     }
