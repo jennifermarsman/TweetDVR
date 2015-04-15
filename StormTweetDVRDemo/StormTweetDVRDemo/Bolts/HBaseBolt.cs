@@ -188,56 +188,163 @@ namespace StormTweetDVRDemo.Bolts
         /// <param name="tuple">The first field is treated as rowkey and rest as column values</param>
         public void Execute(SCPTuple tuple)
         {
-            try
-            {
-                var isTickTuple = tuple.GetSourceStreamId().Equals(Constants.SYSTEM_TICK_STREAM_ID);
+            // Get the data out
+            var creatorName = tuple.GetValue(0) as string;
+            var creatorScreenName = tuple.GetValue(1) as string;
+            var creatorProfileImageUrl = tuple.GetValue(2) as string;
+            var createdAt = (DateTime)tuple.GetValue(3);
+            var isRetweet = (bool)tuple.GetValue(4);
+            var language = tuple.GetValue(5) as string;
+            var retweeted = (bool)tuple.GetValue(6);
+            var text = tuple.GetValue(7) as string;
+            var idStr = tuple.GetValue(8) as string;
+            var topic = tuple.GetValue(9) as string;
+            var retweetCount = (int)tuple.GetValue(10);
+            var favouriteCount = (int)tuple.GetValue(11);
+            var hashtags = tuple.GetValue(12) as string;
+            var orderIndex = (long)tuple.GetValue(13);
+            var sentiment = tuple.GetValue(14) as string;
 
-                //Only add to cache if its not a Tick tuple
-                if (!isTickTuple)
-                {
-                    //seqId helps in keeping the incoming tuples in order of their arrival
-                    cachedTuples.Add(seqId, tuple);
-                    seqId++;
-                }
+            seqId++;
 
-                //TODO: You can choose to write into HBase based on cached tuples count or when the tick tuple arrives
-                //To use Tick tuples make sure that you configure topology.tick.tuple.freq.secs on the bolt and also add the stream in the input streams
-                /* Add this section to your SetBolt in TopologyBuilder to trigger Tick tuples
-                addConfigurations(new Dictionary<string, string>()
-                {
-                    {"topology.tick.tuple.freq.secs", "5"}
-                })
-                */
-                if (cachedTuples.Count >= 10 || isTickTuple)
-                {
-                    WriteToHBase();
-                    //Ack the tuple if enableAck is set to true in TopologyBuilder. This is mandatory if the downstream bolt or spout expects an ack.
-                    if (enableAck)
-                    {
-                        //Ack all the tuples in the batch
-                        foreach (var cachedTuple in cachedTuples)
-                        {
-                            this.context.Ack(cachedTuple.Value);
-                        }
-                    }
-                    cachedTuples.Clear();
-                }
-            }
-            catch (Exception ex)
-            {
-                Context.Logger.Error("An error occured while executing Tuple Id: {0}. Exception Details:\r\n{1}",
-                    tuple.GetTupleId(), ex.ToString());
+            //Use the first value as rowkey and add the remaining as a list
+            //var tablerow = new CellSet.Row { key = ToBytes(tuple) };
 
-                if (enableAck)
+            //Skip the first value and read the remaining
+            //for (int i = 1; i < values.Count; i++)
+            //{
+            //    var rowcell = new Cell
+            //    {
+            //        //Based on our assumption that ColumnNames do NOT contain rowkey field
+            //        column = ToBytes(this.HBaseTableColumnFamily + ":" + this.HBaseTableColumns[i - 1]),
+            //        data = ToBytes(values[i])
+            //    };
+            //    tablerow.values.Add(rowcell);
+            //}
+
+            // From Matt
+            CellSet cs = new CellSet();
+
+            var words = text.ToLower().Split(_punctuationChars);
+                int sentimentScore = 0;  // CalcSentimentScore(words);      // TODO Jen put back in
+                var time_index = (createdAt.ToString("yyyyMMddHHmmss-") + createdAt.Millisecond.ToString());
+                var key = topic + "_" + time_index;
+                var row = new CellSet.Row { key = Encoding.UTF8.GetBytes(key) };
+
+
+                row.values.Add(new Cell
                 {
-                    Context.Logger.Error("Failing the entire current batch");
-                    //Fail all the tuples in the batch
-                    foreach (var cachedTuple in cachedTuples)
-                    {
-                        this.context.Fail(cachedTuple.Value);
-                    }
-                }
-            }
+                    column = Encoding.UTF8.GetBytes("d:id_str"),
+                    data = Encoding.UTF8.GetBytes(idStr)
+                });
+                row.values.Add(new Cell
+                {
+                    column = Encoding.UTF8.GetBytes("d:created_at"),
+                    data = Encoding.UTF8.GetBytes(createdAt.ToString())
+                });
+                row.values.Add(new Cell
+                {
+                    column = Encoding.UTF8.GetBytes("d:screen_name"),
+                    data = Encoding.UTF8.GetBytes(creatorScreenName)
+                });
+                row.values.Add(new Cell
+                {
+                    column = Encoding.UTF8.GetBytes("d:profile_image_url"),
+                    data = Encoding.UTF8.GetBytes(creatorProfileImageUrl)
+                });
+                row.values.Add(new Cell
+                {
+                    column = Encoding.UTF8.GetBytes("d:name"),
+                    data = Encoding.UTF8.GetBytes(creatorName)
+                });
+                row.values.Add(new Cell
+                {
+                    column = Encoding.UTF8.GetBytes("d:text"),
+                    data = Encoding.UTF8.GetBytes(text)
+                });
+                row.values.Add(new Cell
+                {
+                    column = Encoding.UTF8.GetBytes("d:retweet_count"),
+                    data = Encoding.UTF8.GetBytes(retweetCount.ToString())
+                });
+                row.values.Add(new Cell
+                {
+                    column = Encoding.UTF8.GetBytes("d:favourite_count"),
+                    data = Encoding.UTF8.GetBytes(favouriteCount.ToString())
+                });
+                row.values.Add(new Cell
+                {
+                    column = Encoding.UTF8.GetBytes("d:hashtags"),
+                    data = Encoding.UTF8.GetBytes(hashtags)
+                    //data = Encoding.UTF8.GetBytes(string.Join(",", tuple.Hashtags.Select(x => x.Text).ToArray()))
+                });
+                row.values.Add(new Cell
+                {
+                    column = Encoding.UTF8.GetBytes("d:sentiment_score"),
+                    data = Encoding.UTF8.GetBytes(sentimentScore.ToString())
+                });
+                row.values.Add(new Cell
+                {
+                    column = Encoding.UTF8.GetBytes("d:order_index"),
+                    data = Encoding.UTF8.GetBytes(orderIndex.ToString())
+                });
+
+                cs.rows.Add(row);
+            
+            HBaseClusterClient.StoreCells(this.HBaseTableName, cs);
+            Context.Logger.Info("You have written {0} rows", cs.rows.Count);
+
+
+            //try
+            //{
+            //    var isTickTuple = tuple.GetSourceStreamId().Equals(Constants.SYSTEM_TICK_STREAM_ID);
+
+            //    //Only add to cache if its not a Tick tuple
+            //    if (!isTickTuple)
+            //    {
+            //        //seqId helps in keeping the incoming tuples in order of their arrival
+            //        cachedTuples.Add(seqId, tuple);
+            //        seqId++;
+            //    }
+
+            //    //TODO: You can choose to write into HBase based on cached tuples count or when the tick tuple arrives
+            //    //To use Tick tuples make sure that you configure topology.tick.tuple.freq.secs on the bolt and also add the stream in the input streams
+            //    /* Add this section to your SetBolt in TopologyBuilder to trigger Tick tuples
+            //    addConfigurations(new Dictionary<string, string>()
+            //    {
+            //        {"topology.tick.tuple.freq.secs", "5"}
+            //    })
+            //    */
+            //    if (cachedTuples.Count >= 10 || isTickTuple)
+            //    {
+            //        WriteToHBase();
+            //        //Ack the tuple if enableAck is set to true in TopologyBuilder. This is mandatory if the downstream bolt or spout expects an ack.
+            //        if (enableAck)
+            //        {
+            //            //Ack all the tuples in the batch
+            //            foreach (var cachedTuple in cachedTuples)
+            //            {
+            //                this.context.Ack(cachedTuple.Value);
+            //            }
+            //        }
+            //        cachedTuples.Clear();
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    Context.Logger.Error("An error occured while executing Tuple Id: {0}. Exception Details:\r\n{1}",
+            //        tuple.GetTupleId(), ex.ToString());
+
+            //    if (enableAck)
+            //    {
+            //        Context.Logger.Error("Failing the entire current batch");
+            //        //Fail all the tuples in the batch
+            //        foreach (var cachedTuple in cachedTuples)
+            //        {
+            //            this.context.Fail(cachedTuple.Value);
+            //        }
+            //    }
+            //}
         }
 
         //// This method is MWinkle's from his HBase writer
@@ -411,6 +518,11 @@ namespace StormTweetDVRDemo.Bolts
                 Context.Logger.Info("WriteToHBase - End - No cells to write.");
             }
         }
+
+        private static char[] _punctuationChars = new[] { 
+            ' ', '!', '\"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/',   //ascii 23--47
+            ':', ';', '<', '=', '>', '?', '@', '[', ']', '^', '_', '`', '{', '|', '}', '~' };   //ascii 58--64 + misc.
+
 
         static readonly DateTime Jan1st1970 = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 

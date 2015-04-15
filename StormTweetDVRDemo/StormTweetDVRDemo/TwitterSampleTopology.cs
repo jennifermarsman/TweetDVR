@@ -34,13 +34,13 @@ namespace StormTweetDVRDemo
                 },
                 1).shuffleGrouping(typeof(TwitterSampleSpout).Name);
 
-            //topologyBuilder.SetBolt(
-            //    typeof(HBaseBolt).Name,
-            //    HBaseBolt.Get,
-            //    new Dictionary<string, List<string>>() { 
-            //        {Constants.DEFAULT_STREAM_ID, new List<string>(){"count", "tweet", "time"}}
-            //    },
-            //    1).shuffleGrouping(typeof(TwitterSampleBolt).Name);
+            topologyBuilder.SetBolt(
+                typeof(HBaseBolt).Name,
+                HBaseBolt.Get,
+                new Dictionary<string, List<string>>() { 
+                    {Constants.DEFAULT_STREAM_ID, new List<string>(){"count", "tweet", "time"}}
+                },
+                1).shuffleGrouping(typeof(TwitterSampleBolt).Name);
 
             topologyBuilder.SetBolt(
                 typeof(SignalRBroadcastBolt).Name,
