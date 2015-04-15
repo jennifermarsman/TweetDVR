@@ -60,6 +60,14 @@ namespace TweetDVRWebAPI.Models
                         id = Convert.ToString(Encoding.UTF8.GetString(idField.data));
                     }
 
+                    var createdAtField =
+                        row.values.Find(c => Encoding.UTF8.GetString(c.column) == "d:created_at");
+                    DateTime createdAt = DateTime.MinValue;
+                    if (createdAtField != null)
+                    {
+                        createdAt = Convert.ToDateTime(Encoding.UTF8.GetString(createdAtField.data));
+                    }
+
                     var textField =
                         row.values.Find(c => Encoding.UTF8.GetString(c.column) == "d:text");
                     var text = "";
@@ -127,6 +135,7 @@ namespace TweetDVRWebAPI.Models
                     list.Add(new Tweet
                     {
                         IdStr = id,
+                        CreatedAt = createdAt,
                         Text = text,
                         Name = name,
                         ProfileImageUrl = profileImageUrl,
