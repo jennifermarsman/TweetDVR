@@ -1,6 +1,10 @@
-﻿#app .win-listview {
+﻿body {
+    user-select:initial;
+    -webkit-user-select: initial;
+}
+#app .win-listview {
     height: 100%;
 }
 #app .win-container {
-    height: 100px;
+    height: 150px;
 }

@@ -25,33 +25,11 @@
         },
         hashtags: new WinJS.Binding.List([
             { htName: '#GoT', isSelected: true },
-            { htName: '#DrWho', isSelected: false },
-            { htName: '#buildwindows', isSelected: false }
+            { htName: '#GameOfThrones', isSelected: true }
         ]),
         currentTime: new Date(),
-        list: new WinJS.Binding.List([{
-            "IdStr": null,
-            "Text": "#GameofThrones lots of each\n https://t.co/q9UPK0nuDj",
-            "Lang": null,
-            "Sentiment": 0,
-            "Name": "Little Ted",
-            "ProfileImageUrl": "http://pbs.twimg.com/profile_images/1121581727/Publication2_normal.jpg",
-            "FavouriteCount": "0",
-            "Hashtags": "GameofThrones",
-            "RetweetCount": "0",
-            "ScreenName": "THELITTLETED"
-        }, {
-            "IdStr": null,
-            "Text": "via @TheWasNews: a quiet force as Jon Snow #GameofThrones Dion Dublin Гюнтер Грасс http://t.co/qzkDNhRvYV",
-            "Lang": null,
-            "Sentiment": 0,
-            "Name": "anyel",
-            "ProfileImageUrl": "http://pbs.twimg.com/profile_images/535786621338001408/Hs6-cUxH_normal.jpeg",
-            "FavouriteCount": "0",
-            "Hashtags": "GameofThrones",
-            "RetweetCount": "0",
-            "ScreenName": "anyelwae"
-        }]),
+        maxListTime: new Date(),
+        list: new WinJS.Binding.List(),
 
         // Functions
         //
@@ -63,7 +41,8 @@
             }).then(function (arg) {
                 return arg.response.map(function (entry) {
                     return merge(entry, {
-                        CreatedAt: new Date(entry.CreatedAt)
+                        CreatedAt: new Date(entry.CreatedAt),
+                        tweetURL: "https://twitter.com/"+ entry.ScreenName +"/status/"+ entry.IdStr
                     });
                 });
             });
@@ -85,10 +64,17 @@
             context.model.isNeutralSelected = true;
         }),
         togglePlayPause: WinJS.UI.eventHandler(function (evt) {
-            context.model.currentMode = (context.model.currentMode.icon === App.modes.play.icon) ? App.modes.pause : App.modes.play;
+            context.modedl.currentMode = (context.model.currentMode.icon === App.modes.play.icon) ? App.modes.pause : App.modes.play;
 
             if (context.model.currentMode === App.modes.play) {
-                // Call the Web Service
+                App.fetch(context.model.tweetDate).then(function (arg) {
+                    arg.forEach(function (entry) {
+                        if (entry.Text) {
+                            App.list.unshift(entry);
+                        }
+                    });
+                    App.maxListTime = arg[arg.length - 1].CreatedAt;
+                });
 
 
             };
@@ -114,17 +100,14 @@
             isNeutralSelected: true,
             isNegativeSelected: false,
             currentMode: App.modes.play,
-            tweetDate: 'April 13, 2015',
-            tweetTime: '9:00 PM',
+            dvrDate: new Date(2015, 3, 12, 21, 0, 0, 0),
+            dvrTime: new Date(2015, 3, 12, 21, 0, 0, 0)
         }
     });
 
     WinJS.UI.processAll().then(function () {
         WinJS.Binding.processAll(document.body, context);
-        App.fetch(new Date(2015, 3, 14)).then(function (arg) {
-            arg.forEach(function (entry) {
-                App.list.unshift(entry);
-            });
-        });
+
+        
     });
 })();
