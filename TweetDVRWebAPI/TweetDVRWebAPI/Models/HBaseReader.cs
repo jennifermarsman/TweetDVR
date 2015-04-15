@@ -26,7 +26,7 @@ namespace TweetDVRWebAPI.Models
             client = new HBaseClient(creds);
         }
 
-        public async Task<IEnumerable<Tweet>> QueryTweetsAsync(string topic, DateTime time, string keyword, int maxCount)
+        public async Task<IEnumerable<Tweet>> QueryTweetsAsync(string topic, DateTime time, string keyword, int maxCount, int sentimentFilter)
         {
             if (maxCount == 0)
             {
@@ -125,26 +125,29 @@ namespace TweetDVRWebAPI.Models
                     }
 
                     var sentimentField =
-                        row.values.Find(c => Encoding.UTF8.GetString(c.column) == "d:sentiment");
+                        row.values.Find(c => Encoding.UTF8.GetString(c.column) == "d:sentiment_score");
                     var sentiment = 0;
                     if (sentimentField != null)
                     {
                         sentiment = Convert.ToInt32(Encoding.UTF8.GetString(sentimentField.data));
                     }
 
-                    list.Add(new Tweet
+                    if (!string.IsNullOrEmpty(text) && (sentimentFilter == 3 || sentimentFilter == sentiment))
                     {
-                        IdStr = id,
-                        CreatedAt = createdAt,
-                        Text = text,
-                        Name = name,
-                        ProfileImageUrl = profileImageUrl,
-                        Sentiment = sentiment,
-                        FavouriteCount = favouriteCount,
-                        Hashtags = hashtags,
-                        RetweetCount = retweetCount,
-                        ScreenName = screenName
-                    });
+                        list.Add(new Tweet
+                        {
+                            IdStr = id,
+                            CreatedAt = createdAt,
+                            Text = text,
+                            Name = name,
+                            ProfileImageUrl = profileImageUrl,
+                            Sentiment = sentiment,
+                            FavouriteCount = favouriteCount,
+                            Hashtags = hashtags,
+                            RetweetCount = retweetCount,
+                            ScreenName = screenName
+                        });
+                    }
 
                     if (list.Count >= maxCount)
                     {

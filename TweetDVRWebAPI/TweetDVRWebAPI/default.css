@@ -1,5 +1,5 @@
 ﻿body {
-    user-select:initial;
+    user-select: initial;
     -webkit-user-select: initial;
 }
 #app .win-listview {
