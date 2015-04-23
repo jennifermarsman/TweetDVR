@@ -1,5 +1,4 @@
 ﻿(function () {
-    // http://localhost:5848/api/tweetsapi?topic=GameOfThrones&time=2015-04-14&maxCount=100
 
     function merge(a, b) {
         var result = {};
@@ -29,7 +28,7 @@
             { htName: '#GoT', isSelected: true },
             { htName: '#GameOfThrones', isSelected: true }
         ]),
-
+        lastTweet: "",
         maxListTime: initialDate,
         list: new WinJS.Binding.List(),
         pendingReset: true,
@@ -65,10 +64,10 @@
 
             }
         },
-        fetch: function (date) {
+        fetch: function (date, maxCount) {
             var isoDate = date.toISOString();
             var apiDate = isoDate.substring(0, isoDate.length - 2);
-            var url = "/api/tweetsapi?topic=GameOfThrones&time=" + apiDate + "&maxCount=100&sentimentFilter=" + App.sentimentFilter;
+            var url = "/api/tweetsapi?topic=GameOfThrones&time=" + apiDate + "&maxCount=" + maxCount + "&sentimentFilter=" + App.sentimentFilter;
             console.log("fetch: " + url);
             console.log("REQ: " + date.toString());
             return WinJS.xhr({
@@ -80,6 +79,7 @@
                     "0": ":|",
                     "1": ":)"
                 };
+                App.lastFetchTime = Date.now();
                 return arg.response.map(function (entry) {
                     console.log("GOT: " + new Date(entry.CreatedAt).toString());
                     var sentimentFace;
@@ -94,10 +94,15 @@
         fetchMore: function () {
             var maxListTime = App.maxListTime;
             var pendingTweets = App.pendingTweets;
-
-            return App.fetch(maxListTime).then(function (newTweets) {
+            var fetchCount = 100;
+     
+            return App.fetch(maxListTime, fetchCount).then(function (newTweets) {
                 newTweets.forEach(function (tweet) {
-                    pendingTweets.push(tweet);
+                    if (App.lastTweet != tweet.IdStr) {
+                        pendingTweets.push(tweet);
+                        App.lastTweet = tweet.IdStr
+                    }
+                    
                 });
                 App.maxListTime = pendingTweets[pendingTweets.length - 1].CreatedAt;
             });
