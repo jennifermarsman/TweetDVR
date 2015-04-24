@@ -1,5 +1,9 @@
 ﻿(function () {
 
+    twttr.ready(function () {
+        console.log("twttr ready");
+    });
+
     function merge(a, b) {
         var result = {};
         for (key in a) { result[key] = a[key]; }
@@ -112,9 +116,14 @@
             var uiList = App.list;
             var pendingTweets = App.pendingTweets;
             var newPendingTweets = [];
+            var tweetContainer = document.getElementById("container");
             for (var i = 0; i < pendingTweets.length && pendingTweets[i].CreatedAt <= dvrDateTime; i++) {
                 console.log("moved tweet: " + pendingTweets[i].CreatedAt);
-                uiList.unshift(pendingTweets[i]);
+                //uiList.unshift(pendingTweets[i]);
+                var addDiv = document.createElement("div");
+                tweetContainer.insertBefore(addDiv, tweetContainer.firstElementChild);
+                twttr.widgets.createTweet(pendingTweets[i].IdStr, addDiv, {theme: 'dark'});
+                //twttr.widgets.createTweet('266031293945503744', document.getElementById("tweetme"));
             }
             if (i > 0) {
                 // Only slice if we moved some pendingTweets to the UI
@@ -226,7 +235,7 @@
             currentMode: App.modes.play,
             dvrDate: initialDate,
             dvrTime: initialDate
-        }
+        }   
     });
 
     WinJS.UI.processAll().then(function () {
