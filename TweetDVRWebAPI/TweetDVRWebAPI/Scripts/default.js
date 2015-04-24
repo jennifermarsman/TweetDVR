@@ -100,12 +100,12 @@
                     "0": ":|",
                     "1": ":)"
                 };
+                var tweetArray = typeof arg.response === "string" ? JSON.parse(arg.response) : arg.response;
                 App.lastFetchTime = Date.now();
-                return arg.response.map(function (entry) {
-                    console.log("GOT: " + new Date(entry.CreatedAt).toString());
+                return tweetArray.map(function (entry) {
                     var sentimentFace;
                     return merge(entry, {
-                        CreatedAt: new Date(entry.CreatedAt),
+                        CreatedAt: new Date(entry.CreatedAt + "Z"),
                         tweetURL: "https://twitter.com/" + entry.ScreenName + "/status/" + entry.IdStr,
                         sentimentFace: sentimentMapping[entry.Sentiment]
                     });
@@ -135,7 +135,6 @@
             var newPendingTweets = [];
             var tweetContainer = document.getElementById("container");
             for (var i = 0; i < pendingTweets.length && pendingTweets[i].CreatedAt <= dvrDateTime; i++) {
-                console.log("moved tweet: " + pendingTweets[i].CreatedAt);
                 uiList.unshift(pendingTweets[i]);
             }
             if (i > 0) {
