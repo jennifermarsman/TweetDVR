@@ -2,9 +2,7 @@
     user-select: initial;
     -webkit-user-select: initial;
 }
-#app .win-listview {
-    height: 100%;
-}
-#app .win-container {
-    height: 150px;
+.list-scroller {
+    height: calc(100% - 60px);
+    overflow: auto;
 }

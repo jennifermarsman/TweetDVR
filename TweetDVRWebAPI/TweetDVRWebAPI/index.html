@@ -61,8 +61,11 @@
                 data-win-options="{id:'cmdSentiment',label:'Sentiment',icon:'emoji',tooltip:'Filter by sentiment', type:'flyout', flyout:select('#sentimentFlyout')}"></button>
     </div>
 
-    <div id="container" style="overflow:auto;height:100%">
-        <div id="tweetme"></div>
+    <div class="list-scroller">
+        <div data-win-control="WinJS.UI.Repeater" data-win-options="{
+             data: App.list,
+             template: App.tweetRenderer
+        }"></div>
     </div>
 
     <script>

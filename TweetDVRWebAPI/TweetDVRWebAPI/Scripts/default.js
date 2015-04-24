@@ -12,6 +12,7 @@
     }
 
     var initialDate = new Date(Date.UTC(2015, 3, 12, 20));
+    var maxTweetsInDom = 50;
 
     WinJS.Namespace.define("App", {
         // State
@@ -42,6 +43,11 @@
 
         // Functions
         //
+        tweetRenderer: WinJS.Utilities.markSupportedForProcessing(function (tweet) {
+            var element = document.createElement("div");
+            twttr.widgets.createTweet(tweet.IdStr, element, { theme: 'dark' });
+            return element;
+        }),
         dvrDateTime: {
             get: function () {
                 var date = context.model.dvrDate;
@@ -119,15 +125,14 @@
             var tweetContainer = document.getElementById("container");
             for (var i = 0; i < pendingTweets.length && pendingTweets[i].CreatedAt <= dvrDateTime; i++) {
                 console.log("moved tweet: " + pendingTweets[i].CreatedAt);
-                //uiList.unshift(pendingTweets[i]);
-                var addDiv = document.createElement("div");
-                tweetContainer.insertBefore(addDiv, tweetContainer.firstElementChild);
-                twttr.widgets.createTweet(pendingTweets[i].IdStr, addDiv, {theme: 'dark'});
-                //twttr.widgets.createTweet('266031293945503744', document.getElementById("tweetme"));
+                uiList.unshift(pendingTweets[i]);
             }
             if (i > 0) {
                 // Only slice if we moved some pendingTweets to the UI
                 App.pendingTweets = pendingTweets.slice(i);
+            }
+            if (uiList.length > maxTweetsInDom) {
+                uiList.length = maxTweetsInDom;
             }
         },
         updateTweets: function () {
