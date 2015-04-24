@@ -1,8 +1,19 @@
 ﻿(function () {
 
-    twttr.ready(function () {
-        console.log("twttr ready");
+    var _twitterReadyPromise = new WinJS.Promise(function (complete) {
+        twttr.ready(function () {
+            complete();
+        });
     });
+    // Returns a version of twitterReadyPromise that cannot be canceled. If
+    // twitterReadyPromise was involved in a promise chain directly and the
+    // promise chain was canceled, twitterReadyPromise would end up in a canceled
+    // state. Then we'd never know when the twitter API was ready.
+    function twitterReady() {
+        return new WinJS.Promise(function (complete){ 
+            _twitterReadyPromise.then(complete);
+        });
+    }
 
     function merge(a, b) {
         var result = {};
@@ -38,7 +49,7 @@
         list: new WinJS.Binding.List(),
         pendingReset: true,
         pendingTweets: [],
-        tickTimer: 0,
+        tickerPromise: null, // Promise will never complete successfully. Cancel to stop ticking.
         updateTweetsPromise: null,
 
         // Functions
@@ -149,20 +160,29 @@
             }
         },
         startPlaying: function () {
-            App.tickTimer = setInterval(function () {
-                var dvrDateTime = new Date(App.dvrDateTime.getTime() + 1000);
-                context.model.dvrDate = dvrDateTime;
-                context.model.dvrTime = dvrDateTime;
-                if (App.pendingReset) {
-                    App.pendingReset = false;
-                    App.resetState(dvrDateTime);
-                }
-                console.log("Tick: " + dvrDateTime);
-                App.updateTweets();
-            }, 1000);
+            var interval;
+            this.stopPlaying();
+            App.tickerPromise = twitterReady().then(function () {
+                interval = setInterval(function () {
+                    var dvrDateTime = new Date(App.dvrDateTime.getTime() + 1000);
+                    context.model.dvrDate = dvrDateTime;
+                    context.model.dvrTime = dvrDateTime;
+                    if (App.pendingReset) {
+                        App.pendingReset = false;
+                        App.resetState(dvrDateTime);
+                    }
+                    console.log("Tick: " + dvrDateTime);
+                    App.updateTweets();
+                }, 1000);
+
+                return new WinJS.Promise(function () { /* never complete successfully */ });
+            }).then(null, function () {
+                interval && clearInterval(interval);
+            })
         },
         stopPlaying: function () {
-            clearInterval(App.tickTimer);
+            App.tickerPromise && App.tickerPromise.cancel();
+            App.tickerPromise = null;
         },
         resetState: function (dvrDateTime) {
             App.list.length = 0;
