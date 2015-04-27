@@ -7,7 +7,7 @@
 *.sln.docstates
 
 # Lots of passwords
-#SCPHost.exe.config
+SCPHost.exe.config
 
 # Build results
 [Dd]ebug/
