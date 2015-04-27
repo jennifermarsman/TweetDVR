@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Microsoft.SCP;
+
 
 namespace StormTweetDVRDemo.Bolts
 {
@@ -11,6 +15,8 @@ namespace StormTweetDVRDemo.Bolts
     {
         Context context;
         long count = 0;
+        Dictionary<string, DictionaryItem> dictionary;
+
 
         public TwitterSampleBolt(Context context, Dictionary<string, Object> parms)
         {
@@ -47,11 +53,17 @@ namespace StormTweetDVRDemo.Bolts
         /// <param name="tweet"></param>
         public void ExecuteTweet(SerializableTweet tweet)
         {
+            //LoadDictionary();
+
             count++;
             Context.Logger.Info("ExecuteTweet: Count = {0}, Tweet = {1}, Time={2}", count, tweet.Text, tweet.CreatedAt);
 
             //TODO: You can do something on other tweet fields
             //Like aggregations on tweet.Language etc
+
+            // Calculating sentiment score
+            //var words = tweet.Text.ToLower().Split(_punctuationChars);
+            //int sentimentScore = CalcSentimentScore(words);
 
             //Emit the value to next bolt - SignalR & SQL Azure
             //Ensure that subsequent bolts align with the data fields and types you send
@@ -61,5 +73,77 @@ namespace StormTweetDVRDemo.Bolts
             this.context.Emit(new Values(tweet.CreatorName, tweet.CreatorScreenName, tweet.CreatorProfileImageUrl, tweet.CreatedAt, tweet.IsRetweet,
                 tweet.Language.ToString(), tweet.Retweeted, tweet.Text, tweet.IdStr, tweet.Topic, tweet.RetweetCount, tweet.FavouriteCount, tweet.Hashtags, count, tweet.Sentiment));
         }
+
+        private int CalcSentimentScore(string[] words)
+        {
+            var total = 0;
+            foreach (var word in words)
+            {
+                if (dictionary.Keys.Contains(word))
+                {
+                    switch (dictionary[word].Polarity)
+                    {
+                        case "negative": total -= 1; break;
+                        case "positive": total += 1; break;
+                    }
+                }
+            }
+            if (total > 0)
+            {
+                return 1;
+            }
+            else if (total < 0)
+            {
+                return -1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        private void LoadDictionary()
+        {
+            List<string> lines = File.ReadAllLines(@"..\..\data\dictionary.tsv").ToList();
+            var items = lines.Select(line =>
+            {
+                var fields = line.Split('\t');
+                var pos = 0;
+                return new DictionaryItem
+                {
+                    Type = fields[pos++],
+                    Length = Convert.ToInt32(fields[pos++]),
+                    Word = fields[pos++],
+                    Pos = fields[pos++],
+                    Stemmed = fields[pos++],
+                    Polarity = fields[pos++]
+                };
+            });
+
+            dictionary = new Dictionary<string, DictionaryItem>();
+            foreach (var item in items)
+            {
+                if (!dictionary.Keys.Contains(item.Word))
+                {
+                    dictionary.Add(item.Word, item);
+                }
+            }
+        }
+
+        private static char[] _punctuationChars = new[] { 
+            ' ', '!', '\"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/',   //ascii 23--47
+            ':', ';', '<', '=', '>', '?', '@', '[', ']', '^', '_', '`', '{', '|', '}', '~' };   //ascii 58--64 + misc.
+
+        public class DictionaryItem
+        {
+            public string Type { get; set; }
+            public int Length { get; set; }
+            public string Word { get; set; }
+            public string Pos { get; set; }
+            public string Stemmed { get; set; }
+            public string Polarity { get; set; }
+        }
+
+
     }
 }

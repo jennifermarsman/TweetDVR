@@ -2,23 +2,16 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="msapplication-tap-highlight" content="no" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/winjs/4.0.0-preview/css/ui-dark.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/winjs/4.0.0-preview/js/WinJS.js"></script>
     <link rel="stylesheet" href="default.css" />
-    <script src="/Scripts/default.js"></script>
 </head>
 <body id="app">
 
     <!-- Flyouts and templates -->
 
-    <div id="tweetTemplate" data-win-control="WinJS.Binding.Template">
-        <div>
-            <img data-win-bind="src: ProfileImageUrl" />
-            <span data-win-bind="textContent: Name"></span><br />@<span data-win-bind="textContent: ScreenName"></span>
-        </div>
-        <div data-win-bind="textContent: Text"></div>
-        <a data-win-bind="href: tweetURL" target="_blank">View tweet on Twitter</a>
-    </div>
     <div id="hashtagFlyout" data-win-control="WinJS.UI.Flyout">
         <div data-win-control="WinJS.UI.Repeater" data-win-options="{data:App.hashtags}">
             <div>
@@ -28,6 +21,10 @@
         </div>
     </div>
     <div id="sentimentFlyout" data-win-control="WinJS.UI.Menu">
+        <button data-win-control="WinJS.UI.MenuCommand"
+                data-win-options="{label:'All', type:'toggle', onclick:App.allSelected}"
+                data-win-bind="winControl.selected:model.isAllSelected"></button>
+
         <button data-win-control="WinJS.UI.MenuCommand"
                 data-win-options="{label:'Positive', type:'toggle', onclick:App.positiveSelected}"
                 data-win-bind="winControl.selected:model.isPositiveSelected"></button>
@@ -64,10 +61,31 @@
                 data-win-options="{id:'cmdSentiment',label:'Sentiment',icon:'emoji',tooltip:'Filter by sentiment', type:'flyout', flyout:select('#sentimentFlyout')}"></button>
     </div>
 
-    <div data-win-control="WinJS.UI.ListView" data-win-options="{
-         itemDataSource: App.list.dataSource,
-         itemTemplate: tweetTemplate,
-         layout: { type: WinJS.UI.ListLayout }
-    }"></div>
+    <div class="list-scroller">
+        <div data-win-control="WinJS.UI.Repeater" data-win-options="{
+             data: App.list,
+             template: App.tweetRenderer
+        }"></div>
+    </div>
+
+    <script>
+    window.twttr = (function (d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0],
+          t = window.twttr || {};
+        if (d.getElementById(id)) return t;
+        js = d.createElement(s);
+        js.id = id;
+        js.src = "https://platform.twitter.com/widgets.js";
+        fjs.parentNode.insertBefore(js, fjs);
+
+        t._e = [];
+        t.ready = function (f) {
+            t._e.push(f);
+        };
+
+        return t;
+    }(document, "script", "twitter-wjs"));</script>
+    <script src="/Scripts/default.js"></script>
+
 </body>
 </html>
