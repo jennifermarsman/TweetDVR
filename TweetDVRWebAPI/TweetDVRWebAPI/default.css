@@ -1,0 +1,11 @@
+﻿body {
+    user-select: initial;
+    -webkit-user-select: initial;
+}
+.list-scroller {
+    height: calc(100% - 60px);
+    overflow: auto;
+}
+.topicSelect {
+    width:300px;
+}
