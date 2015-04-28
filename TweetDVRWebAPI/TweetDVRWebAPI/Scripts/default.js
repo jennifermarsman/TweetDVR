@@ -142,8 +142,6 @@
             var dvrDateTime = App.dvrDateTime;
             var uiList = App.list;
             var pendingTweets = App.pendingTweets;
-            var newPendingTweets = [];
-            var tweetContainer = document.getElementById("container");
             for (var i = 0; i < pendingTweets.length && pendingTweets[i].CreatedAt <= dvrDateTime; i++) {
                 uiList.unshift(pendingTweets[i]);
             }
@@ -233,6 +231,7 @@
                 // Now playing
                 App.startPlaying();
                 document.getElementById("cmdLive").winControl.selected = false;
+                $.connection.hub.stop();
             } else {
                 // Now paused
                 App.stopPlaying();
@@ -245,17 +244,10 @@
                 App.list.length = 0
                 App.pendingReset = true;
                 App.stopPlaying();
+                $.connection.hub.start();
             } else {
-                // Not Live
+                $.connection.hub.stop();
             }
-
-            /*
-            var tb = document.getElementById("dvrToolbar");
-            if (tb.winControl.data.length === 6) 
-                tb.winControl.data.splice(2, 1);
-            else
-                tb.winControl.data.splice(2, 0, dvrDateControl);
-             */
 
         }),
         toggleHashtag: WinJS.UI.eventHandler(function (evt) {
@@ -295,6 +287,15 @@
         }   
     });
 
+    var twitterHub = $.connection.twitterHub;
+    twitterHub.client.addTweet = function (tweetIdStr) {
+        var uiList = App.list;
+        uiList.unshift({ IdStr: tweetIdStr });
+        if (uiList.length > maxTweetsInDom) {
+            uiList.length = maxTweetsInDom;
+        }
+    };
+   
     WinJS.UI.processAll().then(function () {
         WinJS.Binding.processAll(document.body, context);
         document.getElementById("hashtagRepeater").winControl.data = App.topics.getAt(0).hashtags;
