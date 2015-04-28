@@ -23,6 +23,7 @@
     }
 
     var initialDate = new Date(Date.UTC(2015, 3, 12, 20));
+    var dvrDateControl;
     var maxTweetsInDom = 50;
 
     WinJS.Namespace.define("App", {
@@ -40,9 +41,10 @@
                 tooltip: "Pause"
             }
         },
-        hashtags: new WinJS.Binding.List([
-            { htName: '#GoT', isSelected: true },
-            { htName: '#GameOfThrones', isSelected: true }
+        topics: new WinJS.Binding.List([
+            { tName: "Game of Thrones", tValue: "GameOfThrones", hashtags: new WinJS.Binding.List([{ htName: '#GoT', isSelected: true }, { htName: '#GameOfThrones', isSelected: true }]) },
+            { tName: "NHL Playoffs", tValue: "NHLPlayoffs", hashtags: new WinJS.Binding.List([{ htName: '#NHL', isSelected: true }, { htName: '#NHLPlayoffs', isSelected: true }, { htName: '#BecauseItsTheCup', isSelected: true }, { htName: 'StanleyCup', isSelected: true }, { htName: 'MyPlayoffsMoment', isSelected: true }]) },
+            { tName: "Microsoft Build", tValue: "MSBuild", hashtags: new WinJS.Binding.List([{ htName: '#HDInsights', isSelected: true }, { htName: '#HDIonAzure', isSelected: true }, { htName: '#MSBuild', isSelected: true }, { htName: '#Microsoft', isSelected: true }, { htName: 'bldwin', isSelected: true }]) }
         ]),
         lastTweet: "",
         maxListTime: initialDate,
@@ -85,10 +87,19 @@
 
             }
         },
+        changeTopic: function (option) {
+            for (var i = 0; i < App.topics.length; i++) {
+                if (App.topics.getAt(i).tValue === option.value) {
+                    context.model.selectedTopic = App.topics.getAt(i);
+                    document.getElementById("hashtagRepeater").winControl.data = context.model.selectedTopic.hashtags;
+                    App.pendingReset = true;
+                }
+            }
+        },
         fetch: function (date, maxCount) {
             var isoDate = date.toISOString();
             var apiDate = isoDate.substring(0, isoDate.length - 2);
-            var url = "/api/tweetsapi?topic=GameOfThrones&time=" + apiDate + "&maxCount=" + maxCount + "&sentimentFilter=" + App.sentimentFilter;
+            var url = "/api/tweetsapi?topic=" + context.model.selectedTopic.tValue + "&time=" + apiDate + "&maxCount=" + maxCount + "&sentimentFilter=" + App.sentimentFilter;
             console.log("fetch: " + url);
             console.log("REQ: " + date.toString());
             return WinJS.xhr({
@@ -106,7 +117,6 @@
                     var sentimentFace;
                     return merge(entry, {
                         CreatedAt: new Date(entry.CreatedAt + "Z"),
-                        tweetURL: "https://twitter.com/" + entry.ScreenName + "/status/" + entry.IdStr,
                         sentimentFace: sentimentMapping[entry.Sentiment]
                     });
                 });
@@ -222,13 +232,34 @@
             if (context.model.currentMode.icon === App.modes.pause.icon) {
                 // Now playing
                 App.startPlaying();
+                document.getElementById("cmdLive").winControl.selected = false;
             } else {
                 // Now paused
                 App.stopPlaying();
             }
         }),
+        toggleLiveMode: WinJS.UI.eventHandler(function (evt) {
+            context.model.isLive = document.getElementById("cmdLive").winControl.selected
+            if (context.model.isLive) {
+                context.model.currentMode = App.modes.play;
+                App.pendingReset = true;
+                App.stopPlaying();
+                
+            } else {
+                // Not Live
+            }
+
+            /*
+            var tb = document.getElementById("dvrToolbar");
+            if (tb.winControl.data.length === 6) 
+                tb.winControl.data.splice(2, 1);
+            else
+                tb.winControl.data.splice(2, 0, dvrDateControl);
+             */
+
+        }),
         toggleHashtag: WinJS.UI.eventHandler(function (evt) {
-            var hashtags = App.hashtags;
+            var hashtags = context.model.selectedTopic.hashtags;
             var chk = evt.currentTarget;
             var hashtag = chk.value;
 
@@ -256,6 +287,8 @@
             isPositiveSelected: false,
             isNeutralSelected: false,
             isNegativeSelected: false,
+            isLive: false,
+            selectedTopic: App.topics.getAt(0),
             currentMode: App.modes.play,
             dvrDate: initialDate,
             dvrTime: initialDate
@@ -264,7 +297,9 @@
 
     WinJS.UI.processAll().then(function () {
         WinJS.Binding.processAll(document.body, context);
-
-        
+        document.getElementById("hashtagRepeater").winControl.data = App.topics.getAt(0).hashtags;
+        dvrDateControl = document.getElementById("dvrToolbar").winControl.data.getAt(2);
     });
+
+    window.context = context;
 })();

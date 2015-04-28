@@ -65,7 +65,6 @@ namespace Microsoft.Azure.HDInsight.Sample.SocialArchiveApplication
                 var key = topic + "_" + time_index;
                 var row = new CellSet.Row { key = Encoding.UTF8.GetBytes(key) };
 
-                
                 row.values.Add( new Cell
                 {
                     column = Encoding.UTF8.GetBytes("d:id_str"),

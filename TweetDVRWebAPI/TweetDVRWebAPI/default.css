@@ -6,3 +6,6 @@
     height: calc(100% - 60px);
     overflow: auto;
 }
+.topicSelect {
+    width:300px;
+}
