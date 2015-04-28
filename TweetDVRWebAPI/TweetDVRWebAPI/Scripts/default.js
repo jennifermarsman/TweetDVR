@@ -288,11 +288,13 @@
     });
 
     var twitterHub = $.connection.twitterHub;
-    twitterHub.client.addTweet = function (tweetIdStr) {
-        var uiList = App.list;
-        uiList.unshift({ IdStr: tweetIdStr });
-        if (uiList.length > maxTweetsInDom) {
-            uiList.length = maxTweetsInDom;
+    twitterHub.client.addTweet = function (topic, tweetIdStr) {
+        if (topic === context.model.selectedTopic.tValue) {
+            var uiList = App.list;
+            uiList.unshift({ IdStr: tweetIdStr });
+            if (uiList.length > maxTweetsInDom) {
+                uiList.length = maxTweetsInDom;
+            }
         }
     };
    
