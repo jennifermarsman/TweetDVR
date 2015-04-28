@@ -242,9 +242,9 @@
             context.model.isLive = document.getElementById("cmdLive").winControl.selected
             if (context.model.isLive) {
                 context.model.currentMode = App.modes.play;
+                App.list.length = 0
                 App.pendingReset = true;
                 App.stopPlaying();
-                
             } else {
                 // Not Live
             }
