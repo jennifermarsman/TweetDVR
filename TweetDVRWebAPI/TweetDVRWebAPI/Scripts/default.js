@@ -71,22 +71,6 @@
                 );
             }
         },
-        sentimentFilter: {
-            get: function () {
-   
-                if (context.model.isPositiveSelected) {
-                    return 1;
-                }
-                if (context.model.isNeutralSelected) {
-                    return 0;
-                }
-                if (context.model.isNegativeSelected) {
-                    return -1;
-                }
-                    return 3;
-
-            }
-        },
         changeTopic: function (option) {
             for (var i = 0; i < App.topics.length; i++) {
                 if (App.topics.getAt(i).tValue === option.value) {
@@ -99,25 +83,18 @@
         fetch: function (date, maxCount) {
             var isoDate = date.toISOString();
             var apiDate = isoDate.substring(0, isoDate.length - 2);
-            var url = "/api/tweetsapi?topic=" + context.model.selectedTopic.tValue + "&time=" + apiDate + "&maxCount=" + maxCount + "&sentimentFilter=" + App.sentimentFilter;
+            var url = "/api/tweetsapi?topic=" + context.model.selectedTopic.tValue + "&time=" + apiDate + "&maxCount=" + maxCount;
             console.log("fetch: " + url);
             console.log("REQ: " + date.toString());
             return WinJS.xhr({
                 url: url,
                 responseType: "json"
             }).then(function (arg) {
-                var sentimentMapping = {
-                    "-1": ":(",
-                    "0": ":|",
-                    "1": ":)"
-                };
                 var tweetArray = typeof arg.response === "string" ? JSON.parse(arg.response) : arg.response;
                 App.lastFetchTime = Date.now();
                 return tweetArray.map(function (entry) {
-                    var sentimentFace;
                     return merge(entry, {
-                        CreatedAt: new Date(entry.CreatedAt + "Z"),
-                        sentimentFace: sentimentMapping[entry.Sentiment]
+                        CreatedAt: new Date(entry.CreatedAt + "Z")
                     });
                 });
             });
@@ -196,34 +173,6 @@
             App.pendingTweets = [];
             App.maxListTime = dvrDateTime;
         },
-        allSelected: WinJS.UI.eventHandler(function () {
-                context.model.isAllSelected = true;
-                context.model.isPositiveSelected = false;
-                context.model.isNegativeSelected = false;
-                context.model.isNeutralSelected = false;
-                App.pendingReset = true;
-        }),
-        positiveSelected: WinJS.UI.eventHandler(function () {
-            context.model.isAllSelected = false;
-            context.model.isPositiveSelected = true;
-            context.model.isNegativeSelected = false;
-            context.model.isNeutralSelected = false;
-            App.pendingReset = true;
-        }),
-        negativeSelected: WinJS.UI.eventHandler(function () {
-            context.model.isAllSelected = false;
-            context.model.isPositiveSelected = false;
-            context.model.isNegativeSelected = true;
-            context.model.isNeutralSelected = false;
-            App.pendingReset = true;
-        }),
-        neutralSelected: WinJS.UI.eventHandler(function () {
-            context.model.isAllSelected = false;
-            context.model.isPositiveSelected = false;
-            context.model.isNegativeSelected = false;
-            context.model.isNeutralSelected = true;
-            App.pendingReset = true;
-        }),
         togglePlayPause: WinJS.UI.eventHandler(function (evt) {
             context.model.currentMode = (context.model.currentMode.icon === App.modes.play.icon) ? App.modes.pause : App.modes.play;
 
@@ -275,10 +224,6 @@
 
     var context = WinJS.Binding.as({
         model: {
-            isAllSelected: true,
-            isPositiveSelected: false,
-            isNeutralSelected: false,
-            isNegativeSelected: false,
             isLive: false,
             selectedTopic: App.topics.getAt(0),
             currentMode: App.modes.play,

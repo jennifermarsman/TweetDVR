@@ -13,9 +13,9 @@ namespace TweetDVRWebAPI.Controllers
     {
         HBaseReader hbase = new HBaseReader();
 
-        public async Task<IEnumerable<Tweet>> GetTweets(string topic, DateTime time, string keyword = null, int maxCount = 100, int sentimentFilter = 3)
+        public async Task<IEnumerable<Tweet>> GetTweets(string topic, DateTime time, string keyword = null, int maxCount = 100)
         {
-            return await hbase.QueryTweetsAsync(topic, time, keyword, maxCount, sentimentFilter);
+            return await hbase.QueryTweetsAsync(topic, time, keyword, maxCount);
         }
     }
 }

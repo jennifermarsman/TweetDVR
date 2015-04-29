@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title></title>
+    <title>DataDVR</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="msapplication-tap-highlight" content="no" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/winjs/4.0.0-preview/css/ui-dark.css" />
@@ -23,23 +23,6 @@
             </div>
         </div>
     </div>
-    <div id="sentimentFlyout" data-win-control="WinJS.UI.Menu">
-        <button data-win-control="WinJS.UI.MenuCommand"
-                data-win-options="{label:'All', type:'toggle', onclick:App.allSelected}"
-                data-win-bind="winControl.selected:model.isAllSelected"></button>
-
-        <button data-win-control="WinJS.UI.MenuCommand"
-                data-win-options="{label:'Positive', type:'toggle', onclick:App.positiveSelected}"
-                data-win-bind="winControl.selected:model.isPositiveSelected"></button>
-        <button data-win-control="WinJS.UI.MenuCommand"
-                data-win-options="{label:'Neutral', type:'toggle', onclick:App.neutralSelected}"
-                data-win-bind="winControl.selected:model.isNeutralSelected"
-                onclick="App.neutralSelected"></button>
-        <button data-win-control="WinJS.UI.MenuCommand"
-                data-win-options="{label:'Negative', type:'toggle', onclick:App.negativeSelected}"
-                data-win-bind="winControl.selected:model.isNegativeSelected"
-                onclick="App.negativeSelected"></button>
-    </div>
 
     <!-- UI -->
    
@@ -54,10 +37,6 @@
 
         <button data-win-control="WinJS.UI.Command"
                 data-win-options="{id:'cmdHashtag',label:'Hashtags',icon:'#',tooltip:'Filter by HashTag', type:'flyout', flyout:select('#hashtagFlyout')}"></button>
-        <!--
-        <button data-win-control="WinJS.UI.Command"
-                data-win-options="{id:'cmdSentiment',label:'Sentiment',icon:'emoji',tooltip:'Filter by sentiment', type:'flyout', flyout:select('#sentimentFlyout')}"></button>
-        -->
         <button data-win-control="WinJS.UI.Command"
                 data-win-options="{id:'cmdLive', type:'toggle', onclick: App.toggleLiveMode, label: 'Live', icon:'gotostart', tooltip:'Start streaming live'}"></button>
         
@@ -65,7 +44,7 @@
             <div data-win-control="WinJS.UI.DatePicker"
                     data-win-options="{ onchange: App.dateChanged }"
                     data-win-bind="winControl.current:model.dvrDate">
-            </div> &nbsp;&nbsp;&nbsp;
+            </div> &nbsp;&nbsp;&nbsp;&nbsp;
             <div data-win-control="WinJS.UI.TimePicker"
                     data-win-options="{ onchange: App.timeChanged }"
                     data-win-bind="winControl.current:model.dvrTime">
