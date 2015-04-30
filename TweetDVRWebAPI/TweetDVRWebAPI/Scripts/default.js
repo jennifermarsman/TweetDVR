@@ -237,16 +237,16 @@
     });
 
     var twitterHub = $.connection.twitterHub;
-    twitterHub.client.addTweet = function (topic, tweetIdStr) {
+    twitterHub.client.showTweet = function (topic, tweetId) {
         if (topic === context.model.selectedTopic.tValue) {
             var uiList = App.list;
-            uiList.unshift({ IdStr: tweetIdStr });
+            uiList.unshift({ IdStr: tweetId });
             if (uiList.length > maxTweetsInDom) {
                 uiList.length = maxTweetsInDom;
             }
         }
     };
-   
+
     WinJS.UI.processAll().then(function () {
         WinJS.Binding.processAll(document.body, context);
         document.getElementById("hashtagRepeater").winControl.data = App.topics.getAt(2).hashtags;

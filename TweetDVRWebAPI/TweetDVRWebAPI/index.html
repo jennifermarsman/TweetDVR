@@ -18,7 +18,6 @@
     <div id="hashtagFlyout" data-win-control="WinJS.UI.Flyout">
         <div data-win-control="WinJS.UI.Repeater" id="hashtagRepeater">
             <div>
-                <input type="checkbox" data-win-bind="value: htName; checked:isSelected" onclick="App.toggleHashtag(event)" />
                 <label data-win-bind="textContent:htName"></label>
             </div>
         </div>
@@ -28,35 +27,38 @@
    
     <div id="dvrToolbar" data-win-control="WinJS.UI.ToolBar">
        
-         <div data-win-control="WinJS.UI.Command" data-win-options="{ id: 'dvrTopic', type: 'content'}">
-             <select class="topicSelect" data-win-control="WinJS.UI.Repeater" data-win-options="{data:App.topics}" onchange="App.changeTopic(this);">
-                 <option data-win-bind="textContent: tName; value: tValue; selected: tSelected "></option>
+        <div data-win-control="WinJS.UI.Command" data-win-options="{ id: 'hdr', type: 'content'}">
+            <h1>DataDVR</h1>
+         </div>
+            <div data-win-control="WinJS.UI.Command" data-win-options="{ id: 'dvrTopic', type: 'content'}">
+                <select class="topicSelect" data-win-control="WinJS.UI.Repeater" data-win-options="{data:App.topics}" onchange="App.changeTopic(this);">
+                    <option data-win-bind="textContent: tName; value: tValue; selected: tSelected "></option>
 
-             </select>
-        </div>
-
-        <button data-win-control="WinJS.UI.Command"
-                data-win-options="{id:'cmdHashtag',label:'Hashtags',icon:'#',tooltip:'Filter by HashTag', type:'flyout', flyout:select('#hashtagFlyout')}"></button>
-        <button data-win-control="WinJS.UI.Command"
-                data-win-options="{id:'cmdLive', type:'toggle', onclick: App.toggleLiveMode, label: 'Live', icon:'gotostart', tooltip:'Start streaming live'}"></button>
-        
-        <div data-win-control="WinJS.UI.Command" data-win-options="{ id: 'date', type: 'content', priority: 1, label: 'Date Controls'}">
-            <div data-win-control="WinJS.UI.DatePicker"
-                    data-win-options="{ onchange: App.dateChanged }"
-                    data-win-bind="winControl.current:model.dvrDate">
-            </div> &nbsp;&nbsp;&nbsp;&nbsp;
-            <div data-win-control="WinJS.UI.TimePicker"
-                    data-win-options="{ onchange: App.timeChanged }"
-                    data-win-bind="winControl.current:model.dvrTime">
+                </select>
             </div>
-        </div>
 
-        <button data-win-control="WinJS.UI.Command"
-            data-win-options="{id:'cmdPlay', type:'button', onclick: App.togglePlayPause}"
-            data-win-bind="winControl.label:model.currentMode.label; winControl.icon:model.currentMode.icon; winControl.tooltip:model.currentMode.tooltip"></button>
-        
-            
-      </div>
+            <button data-win-control="WinJS.UI.Command"
+                    data-win-options="{id:'cmdHashtag',label:'Hashtags',icon:'#',tooltip:'Filter by HashTag', type:'flyout', flyout:select('#hashtagFlyout')}"></button>
+            <button data-win-control="WinJS.UI.Command"
+                    data-win-options="{id:'cmdLive', type:'toggle', onclick: App.toggleLiveMode, label: 'Live', icon:'gotostart', tooltip:'Start streaming live'}"></button>
+
+            <div data-win-control="WinJS.UI.Command" data-win-options="{ id: 'date', type: 'content', priority: 1, label: 'Date Controls'}">
+                <div data-win-control="WinJS.UI.DatePicker"
+                     data-win-options="{ onchange: App.dateChanged }"
+                     data-win-bind="winControl.current:model.dvrDate">
+                </div> &nbsp;&nbsp;&nbsp;&nbsp;
+                <div data-win-control="WinJS.UI.TimePicker"
+                     data-win-options="{ onchange: App.timeChanged }"
+                     data-win-bind="winControl.current:model.dvrTime">
+                </div>
+            </div>
+
+            <button data-win-control="WinJS.UI.Command"
+                    data-win-options="{id:'cmdPlay', type:'button', onclick: App.togglePlayPause}"
+                    data-win-bind="winControl.label:model.currentMode.label; winControl.icon:model.currentMode.icon; winControl.tooltip:model.currentMode.tooltip"></button>
+
+
+        </div>
 
     <div class="list-scroller">
         <div data-win-control="WinJS.UI.Repeater" data-win-options="{
