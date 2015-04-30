@@ -30,7 +30,7 @@
        
          <div data-win-control="WinJS.UI.Command" data-win-options="{ id: 'dvrTopic', type: 'content'}">
              <select class="topicSelect" data-win-control="WinJS.UI.Repeater" data-win-options="{data:App.topics}" onchange="App.changeTopic(this);">
-                 <option data-win-bind="textContent: tName; value: tValue"></option>
+                 <option data-win-bind="textContent: tName; value: tValue; selected: tSelected "></option>
 
              </select>
         </div>

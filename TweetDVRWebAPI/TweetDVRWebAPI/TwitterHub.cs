@@ -8,9 +8,9 @@ namespace TweetDVRWebAPI
 {
     public class TwitterHub : Hub
     {
-        public void AddTweet(string topic, string tweetIdStr)
+        public void UpdateCounter(long rowCount, string tweet)
         {
-            Clients.All.addTweet(tweetIdStr);
+            Clients.All.updateCounter(rowCount, tweet);
         }
     }
 }

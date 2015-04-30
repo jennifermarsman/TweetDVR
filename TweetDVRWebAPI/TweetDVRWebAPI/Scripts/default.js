@@ -22,8 +22,6 @@
         return result;
     }
 
-    var initialDate = new Date(Date.UTC(2015, 3, 12, 20));
-    var dvrDateControl;
     var maxTweetsInDom = 50;
 
     WinJS.Namespace.define("App", {
@@ -42,12 +40,12 @@
             }
         },
         topics: new WinJS.Binding.List([
-            { tName: "Game of Thrones", tValue: "GameOfThrones", hashtags: new WinJS.Binding.List([{ htName: '#GoT', isSelected: true }, { htName: '#GameOfThrones', isSelected: true }]) },
-            { tName: "NHL Playoffs", tValue: "NHLPlayoffs", hashtags: new WinJS.Binding.List([{ htName: '#NHL', isSelected: true }, { htName: '#NHLPlayoffs', isSelected: true }, { htName: '#BecauseItsTheCup', isSelected: true }, { htName: 'StanleyCup', isSelected: true }, { htName: 'MyPlayoffsMoment', isSelected: true }]) },
-            { tName: "Microsoft Build", tValue: "MSBuild", hashtags: new WinJS.Binding.List([{ htName: '#HDInsights', isSelected: true }, { htName: '#HDIonAzure', isSelected: true }, { htName: '#MSBuild', isSelected: true }, { htName: '#Microsoft', isSelected: true }, { htName: 'bldwin', isSelected: true }]) }
+            { tName: "Game of Thrones", tValue: "GameOfThrones", tSelected: false,  initialDate: new Date(Date.UTC(2015, 3, 27, 3)), hashtags: new WinJS.Binding.List([{ htName: '#GoT', isSelected: true }, { htName: '#GameOfThrones', isSelected: true }]) },
+            { tName: "NHL Playoffs", tValue: "NHLPlayoffs", tSelected: false,  initialDate: new Date(Date.UTC(2015, 3, 30, 0,1)), hashtags: new WinJS.Binding.List([{ htName: '#NHL', isSelected: true }, { htName: '#NHLPlayoffs', isSelected: true }, { htName: '#BecauseItsTheCup', isSelected: true }, { htName: 'StanleyCup', isSelected: true }, { htName: 'MyPlayoffsMoment', isSelected: true }]) },
+            { tName: "Microsoft Build", tValue: "MSBuild", tSelected: true, initialDate: new Date(Date.UTC(2015, 3, 29, 18,30)), hashtags: new WinJS.Binding.List([{ htName: '#HDInsights', isSelected: true }, { htName: '#HDIonAzure', isSelected: true }, { htName: '#MSBuild', isSelected: true }, { htName: '#Microsoft', isSelected: true }, { htName: 'bldwin', isSelected: true }]) }
         ]),
         lastTweet: "",
-        maxListTime: initialDate,
+        maxListTime: "",
         list: new WinJS.Binding.List(),
         pendingReset: true,
         pendingTweets: [],
@@ -76,6 +74,8 @@
                 if (App.topics.getAt(i).tValue === option.value) {
                     context.model.selectedTopic = App.topics.getAt(i);
                     document.getElementById("hashtagRepeater").winControl.data = context.model.selectedTopic.hashtags;
+                    context.model.dvrDate = context.model.selectedTopic.initialDate;
+                    context.model.dvrTime = context.model.selectedTopic.initialDate;
                     App.pendingReset = true;
                 }
             }
@@ -179,8 +179,12 @@
             if (context.model.currentMode.icon === App.modes.pause.icon) {
                 // Now playing
                 App.startPlaying();
-                document.getElementById("cmdLive").winControl.selected = false;
-                $.connection.hub.stop();
+                
+                if (context.model.isLive) {
+                    context.model.isLive = false;
+                    document.getElementById("cmdLive").winControl.selected = false;
+                    $.connection.hub.stop();
+                }
             } else {
                 // Now paused
                 App.stopPlaying();
@@ -225,10 +229,10 @@
     var context = WinJS.Binding.as({
         model: {
             isLive: false,
-            selectedTopic: App.topics.getAt(0),
+            selectedTopic: App.topics.getAt(2),
             currentMode: App.modes.play,
-            dvrDate: initialDate,
-            dvrTime: initialDate
+            dvrDate: App.topics.getAt(2).initialDate,
+            dvrTime: App.topics.getAt(2).initialDate
         }   
     });
 
@@ -245,8 +249,7 @@
    
     WinJS.UI.processAll().then(function () {
         WinJS.Binding.processAll(document.body, context);
-        document.getElementById("hashtagRepeater").winControl.data = App.topics.getAt(0).hashtags;
-        dvrDateControl = document.getElementById("dvrToolbar").winControl.data.getAt(2);
+        document.getElementById("hashtagRepeater").winControl.data = App.topics.getAt(2).hashtags;
     });
 
     window.context = context;
