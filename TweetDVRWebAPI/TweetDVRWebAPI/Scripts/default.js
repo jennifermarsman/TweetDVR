@@ -76,6 +76,7 @@
                     document.getElementById("hashtagRepeater").winControl.data = context.model.selectedTopic.hashtags;
                     context.model.dvrDate = context.model.selectedTopic.initialDate;
                     context.model.dvrTime = context.model.selectedTopic.initialDate;
+                    App.list.length = 0
                     App.pendingReset = true;
                 }
             }
